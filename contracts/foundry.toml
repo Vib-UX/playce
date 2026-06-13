@@ -11,8 +11,10 @@ remappings = [
 ]
 
 [rpc_endpoints]
+sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
+base = "https://mainnet.base.org"
 base_sepolia = "https://sepolia.base.org"
 
-# Base Sepolia
-# chain id: 84532
-# explorer: https://sepolia.basescan.org
+# Ethereum Sepolia — chain id 11155111
+# Base Sepolia      — chain id 84532
+# Base Mainnet      — chain id 8453

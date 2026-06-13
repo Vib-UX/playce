@@ -9,7 +9,7 @@ import {PlaycePass} from "../src/PlaycePass.sol";
  *
  * Usage:
  *   forge script script/Deploy.s.sol:DeployPlaycePass \
- *     --rpc-url base_sepolia --broadcast --private-key $PRIVATE_KEY
+ *     --rpc-url sepolia --broadcast --private-key $PRIVATE_KEY
  */
 contract DeployPlaycePass is Script {
     function run() external {

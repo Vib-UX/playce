@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Deploy PlaycePass to Base Sepolia using a local keystore, then wire the
+# Deploy PlaycePass to Ethereum Sepolia using a local keystore, then wire the
 # deployed address into the web app's .env.local.
 #
 # Prereqs:
 #   - Foundry installed
-#   - Deployer wallet funded with Base Sepolia ETH (see address below)
+#   - Deployer wallet funded with Sepolia ETH (see address below)
 #
 # Usage:  bash contracts/deploy.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 KEYSTORE_DIR="$HOME/.playce/keystore"
-RPC_URL="${BASE_SEPOLIA_RPC_URL:-https://sepolia.base.org}"
+RPC_URL="${SEPOLIA_RPC_URL:-https://ethereum-sepolia-rpc.publicnode.com}"
 
 KSFILE="$(ls -1 "$KEYSTORE_DIR" | head -1)"
 PK="$(cast wallet decrypt-keystore --keystore-dir "$KEYSTORE_DIR" "$KSFILE" --unsafe-password "" | awk '{print $NF}')"
