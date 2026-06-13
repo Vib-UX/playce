@@ -16,6 +16,7 @@ import { SPONSORS } from "@/lib/mock/sponsors";
 import { getGameById } from "@/lib/mock/games";
 import { usePlayceAuth } from "@/lib/auth/context";
 import { generateRoomCode } from "@/lib/games/six-seven";
+import { ACTIVE_CHAIN } from "@/lib/chain";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -201,7 +202,7 @@ export default function SixSevenLobby() {
             </div>
           </div>
 
-          {/* Staking placeholder — wired later via Privy smart wallets. */}
+          {/* Staking — happens in the room before the host starts. */}
           <div className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-card/40 p-4 text-sm text-muted-foreground">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
               <Lock className="size-4" />
@@ -209,7 +210,8 @@ export default function SixSevenLobby() {
             <div>
               <p className="font-medium text-foreground">Winner-takes-all staking</p>
               <p className="mt-0.5">
-                Coming soon — stake head-to-head with your Privy smart wallet.
+                Create or join a room, then stake USDC via Blink (MetaMask on {ACTIVE_CHAIN.name}) before
+                the match starts.
               </p>
             </div>
           </div>

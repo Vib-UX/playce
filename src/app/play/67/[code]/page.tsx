@@ -11,12 +11,17 @@ import {
   Copy,
   Check,
   Hand,
+  Lock,
   RotateCcw,
   Trophy,
 } from "lucide-react";
 import type { CollectibleArt, Sponsor } from "@/lib/types";
 import { SPONSORS } from "@/lib/mock/sponsors";
 import { usePlayceAuth } from "@/lib/auth/context";
+import { PRIVY_ENABLED } from "@/lib/auth/context";
+import { useStakeDeposit } from "@/lib/blink/use-stake-deposit";
+import { BLINK_STAKING_ENABLED, STAKE_AMOUNT } from "@/lib/blink/config";
+import { ACTIVE_CHAIN } from "@/lib/chain";
 import { Collectible3DViewer } from "@/components/collectible-3d-viewer";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -97,7 +102,18 @@ function SixSevenRoom() {
   const params = useParams<{ code: string }>();
   const search = useSearchParams();
   const code = String(params.code ?? "").toUpperCase();
-  const { email } = usePlayceAuth();
+  const { email, wallet, getAccessToken, mode, authenticated } = usePlayceAuth();
+  const {
+    stake,
+    canStake,
+    status: stakeStatus,
+    displayMessage: stakeError,
+    isActive: stakeActive,
+    result: stakeResult,
+    playerAddress: stakePlayerAddress,
+  } = useStakeDeposit();
+  const [stakeConfirming, setStakeConfirming] = useState(false);
+  const [stakeMessage, setStakeMessage] = useState<string | null>(null);
   const youLabel = email ? email.split("@")[0] : "You";
 
   const sponsor = useMemo(() => {
@@ -395,6 +411,58 @@ function SixSevenRoom() {
     cooldownUntilRef.current = 0;
   };
 
+  const refreshStakeStatus = () => {
+    if (wsRef.current?.readyState !== 1) return;
+    wsRef.current.send(JSON.stringify({ type: "stake-status" }));
+  };
+
+  const handleStake = async () => {
+    if (!role || !code || !canStake) return;
+    setStakeMessage(null);
+    try {
+      const depositResult = await stake({
+        amount: STAKE_AMOUNT,
+        roomCode: code,
+        role,
+      });
+      const transferId = depositResult.transfer?.id;
+      if (!transferId) {
+        setStakeMessage("Deposit completed but no transfer id was returned.");
+        return;
+      }
+
+      setStakeConfirming(true);
+      const token = await getAccessToken();
+      const res = await fetch("/api/stake/confirm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          roomCode: code,
+          role,
+          playerAddress: stakePlayerAddress ?? wallet,
+          amount: STAKE_AMOUNT,
+          transferId,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setStakeMessage(
+          typeof data.error === "string" ? data.error : "Could not confirm stake.",
+        );
+        return;
+      }
+      setStakeMessage("Stake confirmed — waiting for opponent.");
+      refreshStakeStatus();
+    } catch (err) {
+      setStakeMessage(err instanceof Error ? err.message : "Stake failed.");
+    } finally {
+      setStakeConfirming(false);
+    }
+  };
+
   const copyInvite = async () => {
     if (!inviteUrl) return;
     try {
@@ -411,6 +479,10 @@ function SixSevenRoom() {
     host: "empty" as PeerStatus,
     guest: "empty" as PeerStatus,
   };
+  const stakes = server?.stakes ?? { host: false, guest: false };
+  const myStaked = role === "host" ? stakes.host : role === "guest" ? stakes.guest : false;
+  const opponentStaked = role === "host" ? stakes.guest : role === "guest" ? stakes.host : false;
+  const bothStaked = stakes.host && stakes.guest;
   const opponentStatus: PeerStatus = role === "host" ? peers.guest : peers.host;
   const opponentReady = opponentStatus === "online";
 
@@ -597,6 +669,81 @@ function SixSevenRoom() {
         )}
       </div>
 
+      {/* Staking */}
+      {BLINK_STAKING_ENABLED && gameStatus !== "running" && role && (
+        <div className="mt-5 rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-center gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_oklab,var(--brand)_12%,transparent)] text-[var(--brand)]">
+              <Lock className="size-4" />
+            </span>
+            <div className="flex-1">
+              <p className="font-medium">Winner-takes-all stake</p>
+              <p className="text-xs text-muted-foreground">
+                Both players stake {STAKE_AMOUNT} USDC via Blink before the host can start.
+                When you stake, MetaMask will prompt you to switch to{" "}
+                <span className="text-foreground">{ACTIVE_CHAIN.name}</span> — approve that
+                first, then authorize USDC. You need USDC and a little ETH for gas on
+                the same MetaMask account linked to Playce.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <span className={cn(myStaked && "text-[var(--brand)]")}>
+              You {myStaked ? "staked" : "not staked"}
+            </span>
+            <span>·</span>
+            <span className={cn(opponentStaked && "text-[var(--brand)]")}>
+              Opponent {opponentStaked ? "staked" : "waiting…"}
+            </span>
+          </div>
+
+          {!myStaked && (
+            <div className="mt-3">
+              {!authenticated ? (
+                <p className="text-xs text-muted-foreground">
+                  Sign in to stake — use the lobby login before joining a room.
+                </p>
+              ) : (
+                <Button
+                  variant="gradient"
+                  className="w-full"
+                  onClick={handleStake}
+                  disabled={
+                    !canStake ||
+                    stakeActive ||
+                    stakeConfirming ||
+                    stakeStatus === "signer-loading" ||
+                    conn !== "online"
+                  }
+                >
+                  {stakeStatus === "signer-loading" || stakeActive || stakeConfirming
+                    ? "Preparing…"
+                    : `Stake $${STAKE_AMOUNT} USDC`}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {(stakeError || stakeMessage) && (
+            <p className="mt-2 text-xs text-[var(--destructive)]">
+              {stakeError || stakeMessage}
+            </p>
+          )}
+          {stakeResult && myStaked && (
+            <p className="mt-2 text-xs text-[var(--brand)]">
+              Transfer {stakeResult.transfer.id} recorded.
+            </p>
+          )}
+        </div>
+      )}
+
+      {!BLINK_STAKING_ENABLED && PRIVY_ENABLED && mode === "privy" && (
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          Staking unavailable — deploy StakeEscrow and set STAKE_ESCROW_ADDRESS.
+        </p>
+      )}
+
       {/* Controls */}
       <div className="mt-5 flex flex-col gap-3">
         {role === "host" && gameStatus !== "running" && (
@@ -605,10 +752,19 @@ function SixSevenRoom() {
             size="lg"
             className="w-full"
             onClick={sendStart}
-            disabled={!opponentReady || !ready || conn !== "online"}
+            disabled={
+              !opponentReady ||
+              !ready ||
+              conn !== "online" ||
+              (BLINK_STAKING_ENABLED && !bothStaked)
+            }
           >
             <Hand className="size-4" />
-            {gameStatus === "finished" ? "Play again" : "Start the 67"}
+            {gameStatus === "finished"
+              ? "Play again"
+              : BLINK_STAKING_ENABLED && !bothStaked
+                ? "Waiting for stakes…"
+                : "Start the 67"}
           </Button>
         )}
         {role === "host" &&

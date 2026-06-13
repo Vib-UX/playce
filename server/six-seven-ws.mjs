@@ -1,4 +1,5 @@
 import { WebSocketServer } from "ws";
+import { getStakeStatus } from "../src/lib/server/stake-registry.mjs";
 
 /**
  * Authoritative game server for "The 67".
@@ -10,9 +11,9 @@ import { WebSocketServer } from "ws";
  * wallets) without changing this protocol.
  *
  * Protocol
- *   client -> server : {type:"score"|"start"|"reset"}
+ *   client -> server : {type:"score"|"start"|"reset"|"stake-status"}
  *   server -> client : {type:"joined", role}
- *                      {type:"state", scores, timeLeft, status, winner, peers}
+ *                      {type:"state", scores, timeLeft, status, winner, peers, stakes}
  *                      {type:"error", message}
  */
 
@@ -53,6 +54,7 @@ function peerStatus(seat) {
 }
 
 function buildState(room) {
+  const stakes = getStakeStatus(room.code);
   return {
     type: "state",
     scores: room.scores,
@@ -63,6 +65,7 @@ function buildState(room) {
       host: peerStatus(room.seats.host),
       guest: peerStatus(room.seats.guest),
     },
+    stakes,
   };
 }
 
@@ -98,9 +101,15 @@ function bothOnline(room) {
   );
 }
 
+function bothStaked(room) {
+  const stakes = getStakeStatus(room.code);
+  return stakes.host && stakes.guest;
+}
+
 function startGame(room) {
   if (room.status === "running") return;
   if (!bothOnline(room)) return;
+  if (!bothStaked(room)) return;
   clearTimer(room);
   room.scores = [0, 0];
   room.winner = null;
@@ -220,6 +229,10 @@ export function attachSixSevenWss() {
         }
         case "reset": {
           if (seatRole === "host") resetGame(room);
+          break;
+        }
+        case "stake-status": {
+          broadcast(room);
           break;
         }
         default:

@@ -12,6 +12,14 @@ export type GameStatus = "waiting" | "running" | "finished";
 export type PeerStatus = "online" | "reconnecting" | "empty";
 export type Role = "host" | "guest";
 
+/** Per-seat Blink stake confirmation tracked by the WS server. */
+export interface StakeStatus {
+  host: boolean;
+  guest: boolean;
+  hostAmount?: number;
+  guestAmount?: number;
+}
+
 /** Seconds in a 67 round (kept in sync with the server). */
 export const ROUND_SECONDS = 20;
 
@@ -23,6 +31,7 @@ export interface ServerState {
   /** 0 = host, 1 = guest, null = tie / not finished. */
   winner: number | null;
   peers: { host: PeerStatus; guest: PeerStatus };
+  stakes: StakeStatus;
 }
 
 export type ClientMessage =
