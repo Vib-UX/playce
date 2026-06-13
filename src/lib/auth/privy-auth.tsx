@@ -21,7 +21,12 @@ export function PrivyAuthBridge({ children }: { children: React.ReactNode }) {
   const { wallets } = useWallets();
 
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
-  const activeWallet = embeddedWallet ?? wallets[0];
+  const externalWallet = wallets.find(
+    (w) => w.type === "ethereum" && w.walletClientType !== "privy",
+  );
+  // Prefer MetaMask / external wallets for onchain actions — Blink surfaces them in its picker.
+  const activeWallet =
+    externalWallet ?? embeddedWallet ?? wallets.find((w) => w.type === "ethereum");
 
   const login = useCallback(() => {
     privyLogin();
