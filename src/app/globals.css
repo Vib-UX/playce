@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  Playce design system
+  Bold arcade energy — show up, play, earn.
+  Light: clean off-white, ink text, hot-magenta accent.
+  Dark: deep near-black, neon glow — magenta / cyan / lime.
+*/
+
+:root {
+  --background: #fbfaff;
+  --foreground: #15121f;
+
+  --card: #ffffff;
+  --card-foreground: #15121f;
+
+  --popover: #ffffff;
+  --popover-foreground: #15121f;
+
+  --primary: #ec0f73;
+  --primary-foreground: #ffffff;
+
+  --secondary: #fdeaf3;
+  --secondary-foreground: #6e0c3e;
+
+  --muted: #f2f1f7;
+  --muted-foreground: #6b6878;
+
+  --accent: #e8fbf6;
+  --accent-foreground: #0a6b58;
+
+  --destructive: #e5484d;
+  --destructive-foreground: #ffffff;
+
+  --success: #11a36b;
+  --warning: #d99a14;
+
+  --border: #e9e7f0;
+  --input: #e9e7f0;
+  --ring: #ff2e88;
+
+  /* Playce brand */
+  --brand: #ff2e88;
+  --brand-deep: #c81264;
+  --aurora-1: #ff2e88;
+  --aurora-2: #18d9c0;
+  --aurora-3: #c2ff3d;
+
+  --radius: 1rem;
+}
+
+.dark {
+  --background: #0a0912;
+  --foreground: #f4f2fb;
+
+  --card: #141320;
+  --card-foreground: #f4f2fb;
+
+  --popover: #16151f;
+  --popover-foreground: #f4f2fb;
+
+  --primary: #ff3d92;
+  --primary-foreground: #190410;
+
+  --secondary: #221a2b;
+  --secondary-foreground: #ffd6e8;
+
+  --muted: #18161f;
+  --muted-foreground: #a09cb0;
+
+  --accent: #102a2a;
+  --accent-foreground: #6cf3da;
+
+  --destructive: #ff6166;
+  --destructive-foreground: #1a0608;
+
+  --success: #3fe09a;
+  --warning: #f0bf52;
+
+  --border: #262232;
+  --input: #262232;
+  --ring: #ff3d92;
+
+  --brand: #ff3d92;
+  --brand-deep: #ff2e88;
+  --aurora-1: #ff4d9e;
+  --aurora-2: #24e9cf;
+  --aurora-3: #cdff52;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+
+  --radius-sm: calc(var(--radius) - 0.5rem);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.5rem);
+  --radius-2xl: calc(var(--radius) + 1rem);
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+  --font-display: var(--font-display), var(--font-sans), sans-serif;
+
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-aurora: aurora 14s ease infinite;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background-color: color-mix(in oklab, var(--brand) 30%, transparent);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes aurora {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Utility primitives used across the app */
+.text-balance {
+  text-wrap: balance;
+}
+
+.aurora-text {
+  background: linear-gradient(
+    100deg,
+    var(--aurora-1),
+    var(--aurora-3),
+    var(--aurora-2),
+    var(--aurora-1)
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-aurora);
+}
+
+.glass {
+  background: color-mix(in oklab, var(--card) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+.card-glow {
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, var(--foreground) 5%, transparent) inset,
+    0 20px 50px -24px color-mix(in oklab, var(--brand) 45%, transparent);
+}
+
+.hairline {
+  border: 1px solid color-mix(in oklab, var(--border) 100%, transparent);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--muted-foreground) 40%, transparent);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
