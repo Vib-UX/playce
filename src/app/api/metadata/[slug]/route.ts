@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getEventBySlug } from "@/lib/mock/events";
+import { ACTIVE_CHAIN } from "@/lib/chain";
 
 /**
  * ERC-721 metadata for an event's POAP. POAPs share per-event artwork, so this
@@ -26,7 +27,7 @@ export async function GET(
       { trait_type: "Edition", value: event.collectible.art.edition },
       { trait_type: "City", value: event.venue.city },
       { trait_type: "Variant", value: event.collectible.art.variant },
-      { trait_type: "Network", value: "Base Sepolia" },
+      { trait_type: "Network", value: ACTIVE_CHAIN.name },
       { trait_type: "Verification", value: "Geo + Email" },
     ],
   };

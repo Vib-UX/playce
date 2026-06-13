@@ -10,6 +10,7 @@ import { useGeofence } from "@/hooks/use-geofence";
 import { checkWhitelist } from "@/lib/mock/whitelist";
 import { claimMoment } from "@/lib/claim-service";
 import { ALLOW_MULTIPLE_CLAIMS } from "@/lib/config";
+import { ACTIVE_CHAIN } from "@/lib/chain";
 import {
   EligibilityChecklist,
   type CheckState,
@@ -236,7 +237,7 @@ export function ClaimPanel({ event }: { event: PlayceEvent }) {
                 </p>
               )}
               <p className="mt-3 text-center text-xs text-muted-foreground">
-                Gas sponsored on Base Sepolia · proof you were there
+                Gas sponsored on {ACTIVE_CHAIN.name} · proof you were there
               </p>
             </motion.div>
           )}

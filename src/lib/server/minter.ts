@@ -7,7 +7,7 @@ import {
   type Address,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { ACTIVE_CHAIN } from "@/lib/chain";
+import { ACTIVE_CHAIN, rpcUrlForChain } from "@/lib/chain";
 
 /**
  * Server-only chain clients. The minter account mints rewards to verified
@@ -15,8 +15,7 @@ import { ACTIVE_CHAIN } from "@/lib/chain";
  * components — it reads MINTER_PRIVATE_KEY.
  */
 
-const RPC_URL =
-  process.env.BASE_SEPOLIA_RPC_URL ?? ACTIVE_CHAIN.rpcUrls.default.http[0];
+const RPC_URL = rpcUrlForChain(ACTIVE_CHAIN.id);
 
 const rawContract = process.env.NEXT_PUBLIC_PLAYCE_CONTRACT_ADDRESS ?? "";
 const rawKey = process.env.MINTER_PRIVATE_KEY ?? "";

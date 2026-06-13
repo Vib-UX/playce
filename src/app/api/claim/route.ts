@@ -5,7 +5,7 @@ import { getEventBySlug } from "@/lib/mock/events";
 import { checkGeofence, DEMO_FORCE_INSIDE_ZONE } from "@/lib/mock/geofence";
 import { checkWhitelist } from "@/lib/mock/whitelist";
 import { mintReward } from "@/lib/mock/mint";
-import { explorerTxUrl } from "@/lib/chain";
+import { explorerTxUrl, ACTIVE_CHAIN } from "@/lib/chain";
 import { playceAbi, onchainEventId } from "@/lib/poap-abi";
 import { ALLOW_MULTIPLE_CLAIMS } from "@/lib/config";
 import {
@@ -133,7 +133,7 @@ export async function POST(req: Request) {
           { trait_type: "Edition", value: event.collectible.art.edition },
           { trait_type: "City", value: event.venue.city },
           { trait_type: "Variant", value: event.collectible.art.variant },
-          { trait_type: "Network", value: "Base Sepolia" },
+          { trait_type: "Network", value: ACTIVE_CHAIN.name },
           { trait_type: "Verification", value: "Geo + Email" },
           { trait_type: "Media", value: isVideo ? "Video" : "Photo" },
         ],
@@ -227,7 +227,7 @@ export async function POST(req: Request) {
         { trait_type: "Edition", value: event.collectible.art.edition },
         { trait_type: "City", value: event.venue.city },
         { trait_type: "Variant", value: event.collectible.art.variant },
-        { trait_type: "Network", value: "Base Sepolia" },
+        { trait_type: "Network", value: ACTIVE_CHAIN.name },
         { trait_type: "Verification", value: "Geo + Email" },
       ],
     };

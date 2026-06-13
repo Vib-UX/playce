@@ -147,7 +147,7 @@ export const EVENTS: PlayceEvent[] = [
         "/models/mascot-plush.glb",
       ],
     },
-    chainId: 84532,
+    chainId: 11155111,
   },
   {
     id: "evt_ethconf_nyc",
@@ -256,7 +256,7 @@ export const EVENTS: PlayceEvent[] = [
         variant: "prism",
       },
     },
-    chainId: 84532,
+    chainId: 11155111,
   },
   {
     id: "evt_ethglobal_nyc",
@@ -356,7 +356,7 @@ export const EVENTS: PlayceEvent[] = [
         modelUrl: "/models/ethglobal-nyc.glb",
       },
     },
-    chainId: 84532,
+    chainId: 11155111,
   },
   {
     id: "evt_base_house_lisbon",
@@ -434,7 +434,7 @@ export const EVENTS: PlayceEvent[] = [
         variant: "prism",
       },
     },
-    chainId: 84532,
+    chainId: 11155111,
   },
 ];
 

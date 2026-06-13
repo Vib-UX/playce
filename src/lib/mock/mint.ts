@@ -1,5 +1,5 @@
 import type { PlayceEvent, Claim, NFTMetadata } from "@/lib/types";
-import { explorerTxUrl } from "@/lib/chain";
+import { explorerTxUrl, ACTIVE_CHAIN } from "@/lib/chain";
 import { sleep } from "@/lib/utils";
 
 function randomHex(length: number): string {
@@ -71,7 +71,7 @@ export async function mintReward(
       { trait_type: "Edition", value: event.collectible.art.edition },
       { trait_type: "City", value: event.venue.city },
       { trait_type: "Variant", value: event.collectible.art.variant },
-      { trait_type: "Network", value: "Base Sepolia" },
+      { trait_type: "Network", value: ACTIVE_CHAIN.name },
       { trait_type: "Verification", value: "Geo + Email" },
     ],
   };

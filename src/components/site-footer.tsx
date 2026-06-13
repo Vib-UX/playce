@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-logo";
-import { ACTIVE_CHAIN } from "@/lib/chain";
+import { ACTIVE_CHAIN, explorerBaseUrl } from "@/lib/chain";
 
 export function SiteFooter() {
   return (
@@ -40,7 +40,7 @@ export function SiteFooter() {
               Rewards
             </Link>
             <a
-              href={ACTIVE_CHAIN.blockExplorers.default.url}
+              href={explorerBaseUrl()}
               target="_blank"
               rel="noreferrer"
               className="text-muted-foreground hover:text-foreground"

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Mail, Loader2, Sparkles } from "lucide-react";
 import { usePlayceAuth } from "@/lib/auth/context";
+import { ACTIVE_CHAIN } from "@/lib/chain";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 
@@ -105,7 +106,7 @@ export function PrivyAuthButton({
             </Button>
           </form>
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            Powered by Privy embedded wallets · Base Sepolia
+            Powered by Privy embedded wallets · {ACTIVE_CHAIN.name}
           </p>
         </div>
       </Modal>

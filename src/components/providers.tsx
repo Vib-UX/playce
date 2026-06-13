@@ -6,21 +6,32 @@ import { useState } from "react";
 import { http } from "viem";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { WagmiProvider, createConfig } from "@privy-io/wagmi";
-import { ACTIVE_CHAIN } from "@/lib/chain";
+import {
+  ACTIVE_CHAIN,
+  rpcUrlForChain,
+  SUPPORTED_CHAINS,
+} from "@/lib/chain";
 import { PRIVY_APP_ID, PRIVY_ENABLED } from "@/lib/auth/context";
 import { PrivyAuthBridge } from "@/lib/auth/privy-auth";
+import { PrivyWalletBridge } from "@/lib/blink/privy-wallet-bridge";
 import { DemoAuthProvider } from "@/lib/auth/demo-auth";
 
+const wagmiTransports = Object.fromEntries(
+  SUPPORTED_CHAINS.map((chain) => [
+    chain.id,
+    http(rpcUrlForChain(chain.id)),
+  ]),
+) as Record<(typeof SUPPORTED_CHAINS)[number]["id"], ReturnType<typeof http>>;
+
 const wagmiConfig = createConfig({
-  chains: [ACTIVE_CHAIN],
-  transports: { [ACTIVE_CHAIN.id]: http() },
+  chains: [...SUPPORTED_CHAINS],
+  transports: wagmiTransports,
 });
 
 function Web3Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
 
   if (!PRIVY_ENABLED) {
-    // No Privy credentials → polished demo auth, app stays fully explorable.
     return (
       <QueryClientProvider client={queryClient}>
         <DemoAuthProvider>{children}</DemoAuthProvider>
@@ -37,7 +48,7 @@ function Web3Providers({ children }: { children: React.ReactNode }) {
           ethereum: { createOnLogin: "users-without-wallets" },
         },
         defaultChain: ACTIVE_CHAIN,
-        supportedChains: [ACTIVE_CHAIN],
+        supportedChains: [...SUPPORTED_CHAINS],
         appearance: {
           theme: "dark",
           accentColor: "#ff2e88",
@@ -46,7 +57,10 @@ function Web3Providers({ children }: { children: React.ReactNode }) {
     >
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
-          <PrivyAuthBridge>{children}</PrivyAuthBridge>
+          <PrivyAuthBridge>
+            <PrivyWalletBridge />
+            {children}
+          </PrivyAuthBridge>
         </WagmiProvider>
       </QueryClientProvider>
     </PrivyProvider>
