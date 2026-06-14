@@ -1,0 +1,13 @@
+# CRE workflow metadata for the Playce chess result feed.
+#
+# `cre workflow init` normally scaffolds this; the values below are filled in
+# for this fork. Replace `owner` with the EVM address that owns the workflow on
+# the CRE platform, and point `secrets` at secrets.yaml if you add a token.
+name: playce-chess-result-feed
+owner: "0xYOUR_WORKFLOW_OWNER_ADDRESS"
+# Entry point (TypeScript compiled to WASM).
+main: main.ts
+# Non-secret config consumed by main.ts.
+config: config.json
+# Secret declarations (optional — anonymous Lichess needs none).
+secrets: secrets.yaml

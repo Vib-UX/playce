@@ -1,0 +1,6 @@
+{
+  "lichessApiBase": "https://lichess.org",
+  "cronSchedule": "*/1 * * * *",
+  "chainSelector": "15971525489660198786",
+  "arbiterAddress": "0x0000000000000000000000000000000000000000"
+}

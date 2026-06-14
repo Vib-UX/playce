@@ -1,0 +1,22 @@
+# Project-level CRE settings.
+#
+# RPC endpoints are required so the workflow can read `pendingMatches()` and
+# submit signed reports (writeReport) to the ChessArbiter. The arbiter lives on
+# Playce's active settlement chain (Base mainnet by default; Base Sepolia for
+# testing) — keep `config.json:chainSelector` in sync with the chain you use
+# here.
+#
+# Chain selectors (CCIP/CRE):
+#   base            8453      -> 15971525489660198786
+#   base-sepolia    84532     -> 10344971235874465080
+#   ethereum-sepolia 11155111 -> 16015286601757825753
+#   arbitrum-sepolia 421614   -> 3478487238524512106
+rpcs:
+  - chain-name: base-mainnet
+    url: https://mainnet.base.org
+  - chain-name: base-sepolia
+    url: https://sepolia.base.org
+
+# Logging verbosity for `cre workflow simulate`.
+logging:
+  level: info
