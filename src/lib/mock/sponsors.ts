@@ -183,6 +183,8 @@ export const SPONSORS: Sponsor[] = [
     category: "Identity",
     tagline: "Decentralized naming for everything.",
     brandColor: "#5298ff",
+    arModelUrl: "/models/ens.glb",
+    rewardChain: SETTLEMENT_REWARD_CHAIN,
   },
   // ── Infrastructure ─────────────────────────────────────────────────────────
   {
