@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAddress } from "viem";
-import { explorerTxUrl, ACTIVE_CHAIN } from "@/lib/chain";
+import { explorerTxUrl, explorerAddressUrl, ACTIVE_CHAIN } from "@/lib/chain";
 import { onchainEventId } from "@/lib/poap-abi";
 import { getSponsorById } from "@/lib/mock/sponsors";
 import { rewardChainForSponsorId } from "@/lib/battle";
@@ -8,9 +8,13 @@ import {
   getBattleResult,
   markBattleClaimed,
 } from "@/lib/server/leaderboard-store.mjs";
-import { settleStakeOnchain, ESCROW_ONCHAIN_ENABLED } from "@/lib/server/stake-escrow";
+import {
+  settleStakeOnchain,
+  STAKE_ESCROW_ADDRESS,
+} from "@/lib/server/stake-escrow";
 import { mintWinBadge, WIN_BADGE_ENABLED } from "@/lib/server/win-badge";
 import { CCIP_ENABLED } from "@/lib/server/ccip-minter";
+import { getStake } from "@/lib/server/stake-registry.mjs";
 import { PINATA_ENABLED, pinJSON } from "@/lib/server/pinata";
 import { verifyPrivyWalletOwnership } from "@/lib/server/blink-signer";
 
@@ -165,7 +169,15 @@ export async function POST(req: Request) {
 
   // ── Settle the Base-mainnet pot + mint the win badge ──────────────────────
   const out: {
-    pot?: { txHash: string; explorerUrl: string; amount?: string };
+    pot?: {
+      txHash?: string;
+      explorerUrl: string;
+      /** UI label for the link — "Pot settled" (real tx) vs the escrow contract. */
+      explorerLabel: string;
+      amount?: string;
+      /** Real Blink deposit/transfer reference for the staked USDC. */
+      blinkTransferId?: string;
+    };
     badge?: {
       mechanism: "direct" | "ccip";
       chainLabel: string;
@@ -186,6 +198,22 @@ export async function POST(req: Request) {
   // the honest representation.)
   const badgeConfigured = mechanism === "ccip" ? CCIP_ENABLED : WIN_BADGE_ENABLED;
 
+  // Real Blink deposit reference for the staked USDC (recorded at stake time).
+  // Synthetic dev-mock ids are hidden so we never present a fake reference.
+  const hostStake = getStake(roomCode, "host");
+  const guestStake = getStake(roomCode, "guest");
+  const winnerStake =
+    [hostStake, guestStake].find(
+      (s) => s?.playerAddress?.toLowerCase() === winnerAddress.toLowerCase(),
+    ) ??
+    hostStake ??
+    guestStake;
+  const rawTransferId = winnerStake?.transferId;
+  const blinkTransferId =
+    rawTransferId && !rawTransferId.startsWith("dev-mock")
+      ? rawTransferId
+      : undefined;
+
   try {
     const settled = await settleStakeOnchain({
       roomCode,
@@ -195,7 +223,9 @@ export async function POST(req: Request) {
       out.pot = {
         txHash: settled.txHash,
         explorerUrl: explorerTxUrl(settled.txHash),
+        explorerLabel: "Pot settled",
         amount: settled.pot > 0n ? usdcLabel(settled.pot) : undefined,
+        blinkTransferId,
       };
     }
   } catch (err) {
@@ -216,13 +246,27 @@ export async function POST(req: Request) {
     console.error("[reward/claim] badge mint failed", err);
   }
 
-  // Pot: settle reverts in demos (no real USDC credited via dev-mock stake), so
-  // a mock pot link keeps the flow moving. Only fabricate when escrow isn't
-  // configured for real or the demo settle had nothing to settle.
+  // Pot: settle reverts in demos (no real USDC credited via dev-mock stake).
+  // Rather than fabricate a fake settlement tx, point to the real StakeEscrow
+  // contract on the explorer (verifiable) plus the Blink deposit reference.
+  // Only fall back to a synthetic tx when escrow isn't configured at all.
   if (!out.pot) {
-    const txHash = `0x${randomHex(64)}`;
     out.mock = true;
-    out.pot = { txHash, explorerUrl: explorerTxUrl(txHash), amount: undefined };
+    if (STAKE_ESCROW_ADDRESS) {
+      out.pot = {
+        explorerUrl: explorerAddressUrl(STAKE_ESCROW_ADDRESS),
+        explorerLabel: `Stake escrow on ${ACTIVE_CHAIN.name}`,
+        blinkTransferId,
+      };
+    } else {
+      const txHash = `0x${randomHex(64)}`;
+      out.pot = {
+        txHash,
+        explorerUrl: explorerTxUrl(txHash),
+        explorerLabel: "Pot settled",
+        blinkTransferId,
+      };
+    }
   }
 
   // Badge: when the on-chain path IS configured but the mint reverted (e.g. the

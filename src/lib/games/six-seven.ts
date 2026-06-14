@@ -24,7 +24,7 @@ export interface StakeStatus {
 export const ROUND_SECONDS = 20;
 
 /** Auto proof-of-presence recording length (ms) once both players are in. */
-export const GAME_RECORD_MS = 15000;
+export const GAME_RECORD_MS = 7000;
 
 /** Off-chain event slug used for the auto-minted proof-of-presence NFT. */
 export const PROOF_EVENT_SLUG = "ethglobal-nyc";

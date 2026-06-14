@@ -89,7 +89,14 @@ type ClaimStatus = "idle" | "claiming" | "done" | "error";
 
 interface ClaimResult {
   /** USDC pot settlement on Base mainnet. */
-  pot?: { txHash: string; explorerUrl: string; amount?: string };
+  pot?: {
+    txHash?: string;
+    explorerUrl: string;
+    explorerLabel?: string;
+    amount?: string;
+    /** Real Blink deposit/transfer reference for the staked USDC. */
+    blinkTransferId?: string;
+  };
   /** Soulbound win badge on the repped chain. */
   badge?: {
     mechanism: "direct" | "ccip";
@@ -1502,12 +1509,17 @@ function SixSevenRoom() {
                           rel="noreferrer"
                           className="flex items-center gap-1.5 text-xs font-medium text-[var(--brand)] hover:underline"
                         >
-                          Pot settled
+                          {claimResult.pot.explorerLabel ?? "Pot settled"}
                           {claimResult.pot.amount
                             ? ` · ${claimResult.pot.amount}`
                             : ""}{" "}
                           <ArrowRight className="size-3.5" />
                         </a>
+                      )}
+                      {claimResult?.pot?.blinkTransferId && (
+                        <p className="font-mono text-[11px] text-muted-foreground">
+                          Blink deposit · {claimResult.pot.blinkTransferId}
+                        </p>
                       )}
                       {claimResult?.badge?.ccip ? (
                         <a
