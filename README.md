@@ -62,16 +62,16 @@ on Arbitrum Sepolia for cross-chain sends (~4 LINK per message at current fees).
 
 ## Tech stack
 
-| Area        | Choice |
-| ----------- | ------ |
-| Framework   | Next.js (App Router) + TypeScript |
-| Styling     | Tailwind CSS v4 + shadcn-style UI primitives |
-| Motion      | Framer Motion |
-| Auth/Wallet | Privy embedded wallets (`@privy-io/react-auth`, `@privy-io/wagmi`) |
-| Identity    | ENS subname tickets — Durin-style L2 registry on **Sepolia**, resolved via viem's ENSv2 Universal Resolver |
-| Chain       | viem + wagmi — **Base mainnet** (8453) for proofs & staking; **Arbitrum Sepolia** + **Ethereum Sepolia** for chain-battle CCIP badges |
-| 3D          | Three.js via React Three Fiber + drei |
-| State       | Zustand (persisted rewards) |
+| Area        | Choice | Source |
+| ----------- | ------ | ------ |
+| Framework   | Next.js (App Router) + TypeScript | [`src/app/layout.tsx`](https://github.com/Vib-UX/playce/blob/main/src/app/layout.tsx) |
+| Styling     | Tailwind CSS v4 + shadcn-style UI primitives | [`src/app/globals.css`](https://github.com/Vib-UX/playce/blob/main/src/app/globals.css) |
+| Motion      | Framer Motion | [`src/components/hero.tsx`](https://github.com/Vib-UX/playce/blob/main/src/components/hero.tsx) |
+| Auth/Wallet | Privy embedded wallets (`@privy-io/react-auth`, `@privy-io/wagmi`) | [`src/lib/auth/privy-auth.tsx`](https://github.com/Vib-UX/playce/blob/main/src/lib/auth/privy-auth.tsx) |
+| Identity    | ENS subname tickets — Durin-style L2 registry on **Sepolia**, resolved via viem's ENSv2 Universal Resolver | [`src/lib/ens.ts`](https://github.com/Vib-UX/playce/blob/main/src/lib/ens.ts), [`src/lib/server/ens-subname.ts`](https://github.com/Vib-UX/playce/blob/main/src/lib/server/ens-subname.ts) |
+| Chain       | viem + wagmi — **Base mainnet** (8453) for proofs & staking; **Arbitrum Sepolia** + **Ethereum Sepolia** for chain-battle CCIP badges | [`src/components/providers.tsx`](https://github.com/Vib-UX/playce/blob/main/src/components/providers.tsx), [`contracts/`](https://github.com/Vib-UX/playce/tree/main/contracts) |
+| 3D          | Three.js via React Three Fiber + drei | [`src/components/three/collectible-scene.tsx`](https://github.com/Vib-UX/playce/blob/main/src/components/three/collectible-scene.tsx) |
+| State       | Zustand (persisted rewards) | [`src/lib/store.ts`](https://github.com/Vib-UX/playce/blob/main/src/lib/store.ts) |
 
 ## Getting started
 
