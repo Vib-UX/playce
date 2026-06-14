@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getGameBySlug } from "@/lib/mock/games";
-import { ComingSoonGame } from "@/components/coming-soon-game";
+import { ChessLobby } from "./chess-lobby";
 
 export const metadata: Metadata = {
   title: "Chess Blitz",
-  description: "Speed chess, head-to-head, repping your chain — coming soon to Playce.",
+  description:
+    "Speed chess on Lichess, staked head-to-head and settled trustlessly by a Chainlink CRE workflow.",
 };
 
 export default function ChessPage() {
   const game = getGameBySlug("chess");
   if (!game) notFound();
-  return <ComingSoonGame game={game} />;
+  return <ChessLobby />;
 }
