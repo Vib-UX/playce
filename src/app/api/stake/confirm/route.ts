@@ -66,6 +66,12 @@ export async function POST(req: Request) {
 
   recordStake(stake);
 
+  // Dev/test: skip the real on-chain USDC credit — just record the seat as
+  // staked so the game (solo or PvP) can start without any transaction.
+  if (process.env.NEXT_PUBLIC_BLINK_DEV_MOCK_STAKE === "true") {
+    return NextResponse.json({ ok: true, stake, onchainTx: null, mock: true });
+  }
+
   let onchainTx: string | null = null;
   try {
     onchainTx = await creditStakeOnchain({

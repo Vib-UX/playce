@@ -1,10 +1,13 @@
-import { base, baseSepolia, sepolia, type Chain } from "viem/chains";
+import { arbitrumSepolia, base, baseSepolia, sepolia, type Chain } from "viem/chains";
 
 /** Ethereum Sepolia — chain id 11155111. */
 export const ETHEREUM_SEPOLIA = sepolia;
 
 /** Base Sepolia — chain id 84532. */
 export const BASE_SEPOLIA = baseSepolia;
+
+/** Arbitrum Sepolia — chain id 421614. */
+export const ARBITRUM_SEPOLIA = arbitrumSepolia;
 
 /** Base Mainnet — chain id 8453. */
 export const BASE_MAINNET = base;
@@ -84,6 +87,13 @@ export function rpcUrlForChain(chainId: number): string {
       process.env.BASE_SEPOLIA_RPC_URL ??
       process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL ??
       BASE_SEPOLIA.rpcUrls.default.http[0]
+    );
+  }
+  if (chainId === ARBITRUM_SEPOLIA.id) {
+    return (
+      process.env.ARBITRUM_SEPOLIA_RPC_URL ??
+      process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC_URL ??
+      ARBITRUM_SEPOLIA.rpcUrls.default.http[0]
     );
   }
   if (chainId === BASE_MAINNET.id) {
