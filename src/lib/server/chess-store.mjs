@@ -11,7 +11,15 @@
  * color (white = host, black = guest), the staked sponsor/chain, and the
  * authoritative Lichess result once the game ends. The on-chain `ChessArbiter`
  * + CRE workflow settle the pot from the same result.
+ *
+ * Durability: the map is the hot path, but every mutation writes through to
+ * Redis and `hydrateChessStore()` reloads it on boot, so room→game mappings
+ * survive restarts/redeploys. Falls back to pure in-memory if REDIS_URL is
+ * unset.
  */
+import { loadJSON, saveJSON } from "./redis.mjs";
+
+const REDIS_KEY = "playce:chess:matches";
 
 /**
  * @typedef {Object} ChessMatch
@@ -43,6 +51,29 @@ const matches = globalThis[GLOBAL_KEY];
 
 function roomKey(code) {
   return String(code ?? "").trim().toUpperCase();
+}
+
+/** Write-through the whole registry to Redis (fire-and-forget). */
+function persist() {
+  saveJSON(REDIS_KEY, Object.fromEntries(matches));
+}
+
+/**
+ * Reload the registry from Redis into the in-memory map. Call once at boot
+ * (before serving) so rooms created before a restart are still resolvable.
+ * @returns {Promise<number>} number of matches hydrated
+ */
+export async function hydrateChessStore() {
+  const stored = await loadJSON(REDIS_KEY, null);
+  if (!stored || typeof stored !== "object") return 0;
+  let count = 0;
+  for (const [key, value] of Object.entries(stored)) {
+    if (value && typeof value === "object") {
+      matches.set(key, /** @type {ChessMatch} */ (value));
+      count += 1;
+    }
+  }
+  return count;
 }
 
 /** @returns {ChessMatch} */
@@ -87,6 +118,7 @@ export function upsertMatch(roomCode, patch = {}) {
   /** @type {ChessMatch} */
   const next = { ...current, ...patch, roomCode: key, updatedAt: Date.now() };
   matches.set(key, next);
+  persist();
   return next;
 }
 
@@ -121,6 +153,7 @@ export function setMatchResult(roomCode, result) {
     updatedAt: Date.now(),
   };
   matches.set(key, next);
+  persist();
   return next;
 }
 
@@ -130,6 +163,7 @@ export function markMatchOpened(roomCode) {
   if (m) {
     m.opened = true;
     m.updatedAt = Date.now();
+    persist();
   }
   return m ?? null;
 }
@@ -140,6 +174,7 @@ export function markResultRecorded(roomCode) {
   if (m) {
     m.resultRecorded = true;
     m.updatedAt = Date.now();
+    persist();
   }
   return m ?? null;
 }

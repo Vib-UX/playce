@@ -6,9 +6,14 @@
  * aggregated standings. Both run inside the same Node process (`server.mjs`),
  * so they share this module instance — the same pattern as `stake-registry`.
  *
- * This is intentionally process-local (resets on restart). Swap with a DB or an
- * onchain indexer later without changing the read/record surface.
+ * Durability: the in-memory structures are the hot path; every mutation writes
+ * the full snapshot through to Redis and `hydrateLeaderboard()` reloads it on
+ * boot so standings + battle results survive restarts. Falls back to pure
+ * in-memory if REDIS_URL is unset.
  */
+import { loadJSON, saveJSON } from "./redis.mjs";
+
+const REDIS_KEY = "playce:leaderboard:state";
 
 /** @typedef {{ wallet: string, label: string, wins: number, battles: number, sponsorId: string|null, updatedAt: number }} PlayerRow */
 /** @typedef {{ sponsorId: string, wins: number }} ChainRow */
@@ -43,6 +48,39 @@ function normWallet(wallet) {
 function shortLabel(wallet) {
   if (!wallet) return "Player";
   return `${wallet.slice(0, 6)}…${wallet.slice(-4)}`;
+}
+
+/** Write-through the full leaderboard snapshot to Redis (fire-and-forget). */
+function persist() {
+  saveJSON(REDIS_KEY, {
+    players: [...players.entries()],
+    chains: [...chains.entries()],
+    highScores: [...highScores.entries()],
+    battleResults: [...battleResults.entries()],
+    recorded: [...recorded],
+    totalBattles,
+  });
+}
+
+/**
+ * Reload the leaderboard from Redis into the in-memory structures. Call once at
+ * boot, before serving.
+ * @returns {Promise<number>} number of player rows hydrated
+ */
+export async function hydrateLeaderboard() {
+  const s = await loadJSON(REDIS_KEY, null);
+  if (!s || typeof s !== "object") return 0;
+  const restoreMap = (target, entries) => {
+    if (!Array.isArray(entries)) return;
+    for (const [k, v] of entries) target.set(k, v);
+  };
+  restoreMap(players, s.players);
+  restoreMap(chains, s.chains);
+  restoreMap(highScores, s.highScores);
+  restoreMap(battleResults, s.battleResults);
+  if (Array.isArray(s.recorded)) for (const k of s.recorded) recorded.add(k);
+  if (Number.isFinite(s.totalBattles)) totalBattles = s.totalBattles;
+  return players.size;
 }
 
 /**
@@ -110,6 +148,8 @@ export function recordOutcome({
       chains.set(winnerSponsorId, (chains.get(winnerSponsorId) ?? 0) + 1);
     }
   }
+
+  persist();
 }
 
 /**
@@ -132,6 +172,7 @@ export function recordHighScore({ wallet, sponsorId, score, label } = {}) {
     // Keep the best score; still refresh rep + recency.
     if (sponsorId) prev.sponsorId = sponsorId;
     prev.updatedAt = now;
+    persist();
     return;
   }
   highScores.set(w, {
@@ -141,6 +182,7 @@ export function recordHighScore({ wallet, sponsorId, score, label } = {}) {
     sponsorId: sponsorId ?? prev?.sponsorId ?? null,
     updatedAt: now,
   });
+  persist();
 }
 
 /**
@@ -173,6 +215,7 @@ export function recordBattleResult({
     claimedAt: null,
     updatedAt: Date.now(),
   });
+  persist();
 }
 
 /** Latest finished result for a room (or null). */
@@ -186,6 +229,7 @@ export function markBattleClaimed(roomCode) {
   if (result) {
     result.claimedAt = Date.now();
     result.updatedAt = Date.now();
+    persist();
   }
   return result ?? null;
 }
