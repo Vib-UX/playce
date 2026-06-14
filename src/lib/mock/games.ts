@@ -21,13 +21,13 @@ export const GAMES: MiniGame[] = [
     id: "chess",
     slug: "chess",
     name: "Chess Blitz",
-    tagline: "Speed chess, head-to-head, repping your chain.",
+    tagline: "Speed chess on Lichess, settled onchain by Chainlink CRE.",
     description:
-      "A blitz chess showdown played at the venue. Stake head-to-head, rep your chain, and take the pot plus a win badge — coming soon.",
+      "A blitz chess showdown played on Lichess. Stake head-to-head, rep your chain, then a Chainlink CRE workflow reads the Lichess result and settles the pot trustlessly — winner takes the pot plus a soulbound win badge.",
     players: 2,
     staked: true,
     sponsorIds: ["arbitrum", "ethereum", "base"],
-    status: "soon",
+    status: "live",
   },
   {
     id: "basketball",
