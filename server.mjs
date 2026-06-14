@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import next from "next";
 import { attachSixSevenWss } from "./server/six-seven-ws.mjs";
+import { attachChessWss } from "./server/chess-ws.mjs";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOST ?? "0.0.0.0";
@@ -17,15 +18,21 @@ const server = createServer((req, res) => {
   handle(req, res);
 });
 
-// Authoritative "67" game socket lives on /api/ws. Everything else (notably the
-// Turbopack/HMR socket in dev) is forwarded to Next's own upgrade handler.
+// Authoritative "67" game socket lives on /api/ws; the chess result relay on
+// /api/chess-ws. Everything else (notably the Turbopack/HMR socket in dev) is
+// forwarded to Next's own upgrade handler.
 const wss = attachSixSevenWss();
+const chessWss = attachChessWss();
 
 server.on("upgrade", (req, socket, head) => {
   const { pathname } = new URL(req.url ?? "/", "http://localhost");
   if (pathname === "/api/ws") {
     wss.handleUpgrade(req, socket, head, (ws) => {
       wss.emit("connection", ws, req);
+    });
+  } else if (pathname === "/api/chess-ws") {
+    chessWss.handleUpgrade(req, socket, head, (ws) => {
+      chessWss.emit("connection", ws, req);
     });
   } else {
     upgradeHandler(req, socket, head);
