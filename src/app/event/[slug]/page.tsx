@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Gift, Lock, Swords, Users } from "lucide-react";
 import { getEventBySlug, EVENTS } from "@/lib/mock/events";
-import { getSponsorsByIds, getSponsorById } from "@/lib/mock/sponsors";
+import {
+  getSponsorsByIds,
+  getSponsorById,
+  groupSponsorsByCategory,
+} from "@/lib/mock/sponsors";
 import { getGamesByIds } from "@/lib/mock/games";
 import { EventHero } from "@/components/event-hero";
 import { EventSchedule } from "@/components/event-schedule";
@@ -12,6 +16,7 @@ import { VenueMap } from "@/components/venue-map";
 import { StatsStrip } from "@/components/stats-strip";
 import { ClaimPanel } from "@/components/claim-panel";
 import { SponsorChip } from "@/components/sponsor-chip";
+import { LeaderboardBoard } from "@/components/leaderboard-board";
 import { Badge } from "@/components/ui/badge";
 
 export function generateStaticParams() {
@@ -42,6 +47,7 @@ export default async function EventPage({
   if (!event) notFound();
 
   const sponsors = getSponsorsByIds(event.sponsorIds);
+  const sponsorGroups = groupSponsorsByCategory(sponsors);
   const games = getGamesByIds(event.gameIds);
 
   return (
@@ -65,11 +71,25 @@ export default async function EventPage({
                   Rep your chain
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Pick a sponsor AR skin and rep it in every match.
+                  Shill or play for any chain, wallet, or product — rep it in
+                  every match.
                 </p>
-                <div className="mt-4 flex flex-wrap gap-2.5">
-                  {sponsors.map((s) => (
-                    <SponsorChip key={s.id} sponsor={s} />
+                <div className="mt-4 space-y-4">
+                  {sponsorGroups.map((group) => (
+                    <div key={group.category}>
+                      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                        {group.category}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2.5">
+                        {group.sponsors.map((s) => (
+                          <SponsorChip
+                            key={s.id}
+                            sponsor={s}
+                            showCategory={false}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -124,16 +144,18 @@ export default async function EventPage({
                         )}
                       </div>
                     );
-                    return live ? (
+                    return (
                       <Link
                         key={game.id}
-                        href={`/play/${game.slug}`}
+                        href={
+                          live
+                            ? `/play/${game.slug}?event=${event.slug}`
+                            : `/play/${game.slug}`
+                        }
                         className="block h-full"
                       >
                         {inner}
                       </Link>
-                    ) : (
-                      <div key={game.id}>{inner}</div>
                     );
                   })}
                 </div>
@@ -196,6 +218,28 @@ export default async function EventPage({
                       </div>
                     );
                   })}
+                </div>
+              </section>
+            )}
+
+            {games.some((g) => g.players >= 2) && (
+              <section>
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="font-display text-xl font-semibold">
+                    Chain battle leaderboard
+                  </h2>
+                  <Link
+                    href="/leaderboard"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                  >
+                    Full board <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Live wins from The 67 — players and the chains they rep.
+                </p>
+                <div className="mt-4">
+                  <LeaderboardBoard limit={5} />
                 </div>
               </section>
             )}

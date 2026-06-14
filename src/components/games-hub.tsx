@@ -36,15 +36,12 @@ function GameCard({ game }: { game: MiniGame }) {
           <span className="inline-flex items-center gap-1">· Staked p2p</span>
         )}
       </div>
-      {live && (
-        <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
-          Play now <ArrowRight className="size-4" />
-        </span>
-      )}
+      <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+        {live ? "Play now" : "Preview"} <ArrowRight className="size-4" />
+      </span>
     </div>
   );
 
-  if (!live) return body;
   return (
     <Link href={`/play/${game.slug}`} className="block h-full">
       {body}
