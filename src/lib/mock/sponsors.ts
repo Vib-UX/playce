@@ -190,7 +190,7 @@ export const SPONSORS: Sponsor[] = [
     category: "Product",
     tagline: "Actions you can play, anywhere.",
     brandColor: "#ff7a1a",
-    arModelUrl: "/models/collectible.glb",
+    arModelUrl: "/models/blink.glb",
   },
   {
     id: "unlink",

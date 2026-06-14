@@ -215,9 +215,16 @@ function SixSevenRoom() {
   // Per-hand AR skins reflect the repped sponsor:
   //  - chain battle (Arbitrum / Ethereum) -> Arb vs Eth, mirroring Pyth vs
   //    Chainlink so each hand wears a rival chain.
+  //  - repped sponsor with a companion (Blink -> Chainlink, Chainlink -> Pyth)
+  //    -> repped on one hand, the companion skin on the other.
   //  - other sponsor with a .glb (Privy, Dynamic, …) -> both hands wear it.
   //  - fallback -> the bundled Pyth + Chainlink skins.
   const handSponsors = useMemo(() => {
+    // Companion skin shown on the OTHER hand for a given repped sponsor.
+    const COMPANION_SKIN: Record<string, string> = {
+      blink: "chainlink",
+      chainlink: "pyth",
+    };
     const chainlink = SPONSORS.find((s) => s.id === "chainlink") ?? SPONSORS[0];
     const pyth = SPONSORS.find((s) => s.id === "pyth") ?? SPONSORS[0];
     if (isChainBattleSponsorId(repSponsorId)) {
@@ -226,7 +233,12 @@ function SixSevenRoom() {
       if (arb?.arModelUrl && eth?.arModelUrl) return [arb, eth] as const;
     }
     const repped = repSponsorId ? getSponsorById(repSponsorId) : undefined;
-    if (repped?.arModelUrl) return [repped, repped] as const;
+    if (repped?.arModelUrl) {
+      const companionId = COMPANION_SKIN[repped.id];
+      const companion = companionId ? getSponsorById(companionId) : undefined;
+      if (companion?.arModelUrl) return [repped, companion] as const;
+      return [repped, repped] as const;
+    }
     // [skin0 -> screen-right -> Pyth, skin1 -> screen-left -> Chainlink]
     return [pyth, chainlink] as const;
   }, [repSponsorId]);
