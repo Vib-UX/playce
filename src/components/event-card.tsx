@@ -49,7 +49,7 @@ export function EventCard({ event }: { event: PlayceEvent }) {
         <div className="mt-2 space-y-1.5 text-sm text-muted-foreground">
           <p className="inline-flex items-center gap-2">
             <CalendarDays className="size-3.5" />
-            {formatDateRange(event.startISO, event.endISO)}
+            {formatDateRange(event.startISO, event.endISO, event.timezone)}
           </p>
           <p className="inline-flex items-center gap-2">
             <MapPin className="size-3.5" />

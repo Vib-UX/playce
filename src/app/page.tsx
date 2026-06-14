@@ -17,7 +17,10 @@ export default function HomePage() {
       <Hero event={FEATURED_EVENT} />
 
       {/* Featured venues */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section
+        id="events"
+        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 scroll-mt-24"
+      >
         <div className="flex items-end justify-between">
           <div>
             <p className="text-sm font-medium text-[var(--brand)]">Featured</p>
@@ -82,7 +85,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/play/67"
+              href={`/event/${FEATURED_EVENT.slug}`}
               className={cn(buttonVariants({ variant: "gradient", size: "lg" }))}
             >
               Play the 67

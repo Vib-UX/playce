@@ -68,7 +68,7 @@ export function EventHero({ event }: { event: PlayceEvent }) {
             <div className="mt-5 flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:gap-6">
               <span className="inline-flex items-center gap-2">
                 <CalendarDays className="size-4 text-muted-foreground" />
-                {formatDateRange(event.startISO, event.endISO)}
+                {formatDateRange(event.startISO, event.endISO, event.timezone)}
               </span>
               <span className="inline-flex items-center gap-2">
                 <MapPin className="size-4 text-muted-foreground" />

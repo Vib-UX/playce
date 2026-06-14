@@ -11,8 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/event/base-house-nyc", label: "Venue" },
+  { href: "/#events", label: "Events" },
   { href: "/play/pvp", label: "PvP" },
+  { href: "/leaderboard", label: "Leaderboard" },
   { href: "/claim", label: "Check in" },
   { href: "/profile", label: "Rewards" },
 ];

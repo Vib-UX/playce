@@ -17,7 +17,7 @@ export function EventSchedule({ event }: { event: PlayceEvent }) {
           <div className="-mt-0.5 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm text-muted-foreground">
-                {formatTime(item.startISO)}
+                {formatTime(item.startISO, event.timezone)}
               </span>
               {item.track && <Badge variant="outline">{item.track}</Badge>}
             </div>

@@ -40,7 +40,7 @@ export function Hero({ event }: { event: PlayceEvent }) {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/play/67"
+              href={`/event/${event.slug}`}
               className={cn(buttonVariants({ variant: "gradient", size: "lg" }))}
             >
               Play the 67
@@ -79,7 +79,9 @@ export function Hero({ event }: { event: PlayceEvent }) {
           transition={{ duration: 0.7, delay: 0.1 }}
           className="relative mx-auto w-full max-w-md"
         >
-          <Collectible3DViewer art={event.collectible.art} />
+          <Collectible3DViewer
+            art={{ ...event.collectible.art, modelUrl: undefined }}
+          />
           <div className="pointer-events-none absolute -bottom-2 left-1/2 -translate-x-1/2 text-center">
             <p className="text-xs font-medium text-muted-foreground">
               {event.collectible.name}

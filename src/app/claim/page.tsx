@@ -55,7 +55,7 @@ export default async function ClaimPage({
               <div className="mt-2 space-y-1.5 text-sm text-muted-foreground">
                 <p className="inline-flex items-center gap-2">
                   <CalendarDays className="size-4" />
-                  {formatDateRange(event.startISO, event.endISO)}
+                  {formatDateRange(event.startISO, event.endISO, event.timezone)}
                 </p>
                 <p className="inline-flex items-center gap-2">
                   <MapPin className="size-4" />
