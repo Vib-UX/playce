@@ -39,7 +39,24 @@ Lichess game  ──HTTP──▶  CRE workflow (this)  ──signed report─�
    - `chainSelector` → the CRE/CCIP selector for the arbiter's chain (see
      `project.yaml` for the common values; default is Base mainnet).
 
-## Simulate (local-first)
+## Local feed simulation (no CRE account needed)
+
+To demonstrate the data feed end-to-end **without** the `cre` CLI or a DON, run
+the local harness. It reproduces the workflow's exact logic — fetch the Lichess
+result, then ABI-encode `(matchId, winner)` — and prints the byte-identical
+report payload that would be signed and delivered to `ChessArbiter.onReport`:
+
+```bash
+# Default: a real finished public game
+node simulate-local.mjs
+# Or point it at a specific game + players
+node simulate-local.mjs <gameId> <whiteAddr> <blackAddr>
+```
+
+It reads `LICHESS_TOKEN` from `.env` when present (authenticated reads),
+otherwise falls back to anonymous public reads.
+
+## Simulate with the CRE CLI (local-first)
 
 ```bash
 npm install            # @chainlink/cre-sdk + viem

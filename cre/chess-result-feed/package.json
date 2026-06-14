@@ -5,6 +5,7 @@
   "description": "Chainlink CRE workflow that settles Playce chess PvP from the Lichess result.",
   "type": "module",
   "scripts": {
+    "simulate:local": "node simulate-local.mjs",
     "simulate": "cre workflow simulate .",
     "deploy": "cre workflow deploy .",
     "update": "cre workflow update ."
