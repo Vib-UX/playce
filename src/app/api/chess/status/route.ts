@@ -64,7 +64,7 @@ export async function GET(req: Request) {
               { wallet: match.black ?? undefined, sponsorId: match.sponsorId },
             ],
             roomCode,
-            battleKey: match.gameId,
+            battleKey: match.gameId ?? roomCode,
           });
           markResultRecorded(roomCode);
         }

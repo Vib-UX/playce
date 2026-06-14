@@ -78,11 +78,13 @@ export function getMatch(roomCode) {
  * Create-or-update a match with a partial patch. Returns the stored match.
  * @param {string} roomCode
  * @param {Partial<ChessMatch>} patch
+ * @returns {ChessMatch}
  */
 export function upsertMatch(roomCode, patch = {}) {
   const key = roomKey(roomCode);
   if (!key) throw new Error("roomCode is required");
   const current = matches.get(key) ?? blankMatch(key);
+  /** @type {ChessMatch} */
   const next = { ...current, ...patch, roomCode: key, updatedAt: Date.now() };
   matches.set(key, next);
   return next;
@@ -93,6 +95,7 @@ export function upsertMatch(roomCode, patch = {}) {
  * first finish sticks). Maps the winning color to the staked wallet.
  * @param {string} roomCode
  * @param {{ winner: "white"|"black"|null, draw: boolean, status: string }} result
+ * @returns {ChessMatch | null}
  */
 export function setMatchResult(roomCode, result) {
   const key = roomKey(roomCode);
@@ -107,6 +110,7 @@ export function setMatchResult(roomCode, result) {
         ? current.black
         : null;
 
+  /** @type {ChessMatch} */
   const next = {
     ...current,
     status: "finished",
