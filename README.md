@@ -26,7 +26,7 @@ artifact**.
 - **Rep your chain + airdrops** — sponsors drop rewards to attendees at the
   venue.
 - **Onchain reward mint** — viem/wagmi-shaped states (preparing → signing →
-  submitting → confirming → success), gasless via a backend minter.
+  submitting → confirming → success).
 - **3D reward reveal** + shareable collectible page + rewards gallery.
 
 ## Tech stack
@@ -47,7 +47,7 @@ artifact**.
 # 1. Install dependencies
 npm install
 
-# 2. (Optional) configure Privy — the app runs without it in demo mode
+# 2. Configure Privy
 cp .env.example .env.local
 # then set NEXT_PUBLIC_PRIVY_APP_ID=... from https://dashboard.privy.io
 
@@ -56,20 +56,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
-
-### Demo mode vs. real Privy
-
-- **No `NEXT_PUBLIC_PRIVY_APP_ID`** → Playce uses a faithful **demo auth**: an
-  email modal provisions a mock embedded wallet so the full flow works
-  immediately.
-- **With a Privy app id** → real email login + embedded wallet creation on Base
-  Sepolia, wired through `@privy-io/wagmi`.
-
-### Geofence demo override
-
-The flow is explorable anywhere thanks to a demo override. To exercise the real
-browser geolocation + distance check, set `DEMO_FORCE_INSIDE_ZONE = false` in
-`src/lib/mock/geofence.ts`.
 
 ## Pages
 
@@ -134,15 +120,6 @@ cd contracts
 forge test
 ```
 
-### Trust model (why a backend minter?)
-
-Geofencing, identity checks, and game results are verified **off-chain**. The
-backend holds `MINTER_ROLE` and mints directly to the user's embedded wallet, so
-collecting is **gasless** for users.
-
-If no contract/minter is configured, `/api/claim` falls back to a mock mint so
-the flow still works locally.
-
 ### Verify source code
 
 Re-submit or refresh Sourcify verification (syncs to Blockscout):
@@ -183,12 +160,6 @@ Wire addresses into `.env.local` (see `.env.example`) and restart the dev server
 staking, sponsor AR skins (Chainlink / Pyth / Arbitrum / Ethereum), camera-based
 scoring, solo high-score mode, and onchain win badges + pot settlement via
 `/api/reward/claim`.
-
-## Remaining mock surfaces
-
-- **Eligibility** — `lib/mock/whitelist.ts` and `lib/mock/geofence.ts` are stubs.
-- **Data** — back `lib/mock/events.ts`, `lib/mock/sponsors.ts`, and
-  `lib/mock/games.ts` with a CMS or onchain registry; the types stay the same.
 
 ---
 
