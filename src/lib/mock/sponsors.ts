@@ -1,5 +1,13 @@
-import { ARBITRUM_SEPOLIA, ETHEREUM_SEPOLIA } from "@/lib/chain";
+import { ACTIVE_CHAIN, ARBITRUM_SEPOLIA, ETHEREUM_SEPOLIA, explorerBaseUrl } from "@/lib/chain";
 import type { Sponsor } from "@/lib/types";
+
+/** Win badges for Blink/Chainlink stakes settle on the active chain (Base). */
+const SETTLEMENT_REWARD_CHAIN = {
+  chainId: ACTIVE_CHAIN.id,
+  badgeMechanism: "direct" as const,
+  label: ACTIVE_CHAIN.name,
+  explorerBaseUrl: explorerBaseUrl(),
+};
 
 /**
  * Chains / products / oracles that "rep" at Playce venues. Attendees can rep
@@ -10,6 +18,8 @@ import type { Sponsor } from "@/lib/types";
  */
 export const SPONSORS: Sponsor[] = [
   // ── Oracle / data ──────────────────────────────────────────────────────────
+  // Chainlink reps a staked chain battle — pot settles via Blink on the active
+  // chain; winner gets a soulbound badge there (CRE path for chess, direct for 67).
   {
     id: "chainlink",
     name: "Chainlink",
@@ -18,6 +28,7 @@ export const SPONSORS: Sponsor[] = [
     tagline: "The standard for onchain data & cross-chain.",
     brandColor: "#2a5ada",
     arModelUrl: "/models/chainlink.glb",
+    rewardChain: SETTLEMENT_REWARD_CHAIN,
   },
   {
     id: "pyth",
@@ -183,6 +194,7 @@ export const SPONSORS: Sponsor[] = [
     brandColor: "#4285f4",
   },
   // ── Products ─────────────────────────────────────────────────────────────
+  // Blink powers the USDC stake deposit — repping Blink is a chain battle too.
   {
     id: "blink",
     name: "Blink",
@@ -191,6 +203,7 @@ export const SPONSORS: Sponsor[] = [
     tagline: "Actions you can play, anywhere.",
     brandColor: "#ff7a1a",
     arModelUrl: "/models/blink.glb",
+    rewardChain: SETTLEMENT_REWARD_CHAIN,
   },
   {
     id: "unlink",

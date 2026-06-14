@@ -3,8 +3,8 @@ import type { BattleMode, Sponsor, SponsorRewardChain } from "@/lib/types";
 
 /**
  * Battle type derived from the repped sponsor.
- *  - reward-bearing chain (Arbitrum / Ethereum) => staked "chain battle"
- *  - everything else                            => "memory battle" (clip only)
+ *  - reward-bearing sponsor (Arbitrum, Ethereum, Chainlink, Blink, …) => staked "chain battle"
+ *  - everything else                                            => "memory battle" (clip only)
  */
 export function battleModeForSponsor(sponsor?: Sponsor | null): BattleMode {
   return sponsor?.rewardChain ? "chain" : "memory";

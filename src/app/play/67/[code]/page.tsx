@@ -19,7 +19,6 @@ import type { CollectibleArt, Sponsor } from "@/lib/types";
 import { SPONSORS, getSponsorById } from "@/lib/mock/sponsors";
 import {
   battleModeForSponsorId,
-  isChainBattleSponsorId,
   rewardChainForSponsorId,
 } from "@/lib/battle";
 import { usePlayceAuth } from "@/lib/auth/context";
@@ -213,8 +212,7 @@ function SixSevenRoom() {
   const youLabel = email ? email.split("@")[0] : "You";
 
   // Per-hand AR skins reflect the repped sponsor:
-  //  - chain battle (Arbitrum / Ethereum) -> Arb vs Eth, mirroring Pyth vs
-  //    Chainlink so each hand wears a rival chain.
+  //  - Arbitrum / Ethereum chain battles -> rival chain skins on each hand.
   //  - repped sponsor with a companion (Blink -> Chainlink, Chainlink -> Pyth)
   //    -> repped on one hand, the companion skin on the other.
   //  - other sponsor with a .glb (Privy, Dynamic, …) -> both hands wear it.
@@ -227,7 +225,7 @@ function SixSevenRoom() {
     };
     const chainlink = SPONSORS.find((s) => s.id === "chainlink") ?? SPONSORS[0];
     const pyth = SPONSORS.find((s) => s.id === "pyth") ?? SPONSORS[0];
-    if (isChainBattleSponsorId(repSponsorId)) {
+    if (repSponsorId === "arbitrum" || repSponsorId === "ethereum") {
       const arb = getSponsorById("arbitrum");
       const eth = getSponsorById("ethereum");
       if (arb?.arModelUrl && eth?.arModelUrl) return [arb, eth] as const;
