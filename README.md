@@ -18,6 +18,9 @@ artifact**.
 - **Gamified venue experience** — bold arcade UX, mobile-first, light & dark.
 - **Email onboarding via Privy** — embedded wallets created instantly, no seed
   phrases.
+- **ENS subname tickets** — every attendee claims an event-scoped subname (e.g.
+  `you-ethglobal-nyc.playce.eth`) off `playce.eth`, minted gasless to their
+  wallet with `addr` + `tier`/`event` resolver records.
 - **Geofenced check-in** — location permission → "inside / outside zone" → check
   in, with clear fallback states.
 - **Mini-games hub** — including the **67**: two players stake p2p, the camera
@@ -37,6 +40,7 @@ artifact**.
 | Styling     | Tailwind CSS v4 + shadcn-style UI primitives |
 | Motion      | Framer Motion |
 | Auth/Wallet | Privy embedded wallets (`@privy-io/react-auth`, `@privy-io/wagmi`) |
+| Identity    | ENS subname tickets — Durin-style L2 registry on **Sepolia**, resolved via viem's ENSv2 Universal Resolver |
 | Chain       | viem + wagmi — **Base mainnet** (8453) for proofs & staking; **Arbitrum Sepolia** + **Ethereum Sepolia** for chain-battle CCIP badges |
 | 3D          | Three.js via React Three Fiber + drei |
 | State       | Zustand (persisted rewards) |
