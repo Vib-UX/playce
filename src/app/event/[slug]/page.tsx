@@ -15,6 +15,7 @@ import { EventHosts, EventSpeakers } from "@/components/event-people";
 import { VenueMap } from "@/components/venue-map";
 import { StatsStrip } from "@/components/stats-strip";
 import { ClaimPanel } from "@/components/claim-panel";
+import { EnsTicketCard } from "@/components/ens-ticket-card";
 import { SponsorChip } from "@/components/sponsor-chip";
 import { LeaderboardBoard } from "@/components/leaderboard-board";
 import { Badge } from "@/components/ui/badge";
@@ -275,6 +276,7 @@ export default async function EventPage({
           {/* Sticky check-in rail */}
           <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
             <ClaimPanel event={event} />
+            <EnsTicketCard event={event} />
             <StatsStrip event={event} />
             <div className="rounded-2xl border border-border bg-card p-5">
               <h3 className="font-display font-semibold">Hosts</h3>
