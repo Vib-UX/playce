@@ -13,6 +13,34 @@ artifact**.
 
 ---
 
+## Live demo transactions
+
+| What | Network | Transaction |
+| ---- | ------- | ----------- |
+| Cross-chain win badge over Chainlink CCIP | Arbitrum Sepolia → Ethereum Sepolia | [CCIP message](https://ccip.chain.link/msg/0x1022e446320a63a1817bd891ebc1174fe985a24974bd778157881ca60039bc1b) |
+| ENS subname ticket `btcvibhav-ethglobal-nyc.playce.eth` | Sepolia | [Registration tx](https://sepolia.etherscan.io/tx/0x89affb4456db83dac6176cfc3897e05ff58b61d4e8ae1d896d5e9dc9f7d933f9) |
+
+## Deployed contracts
+
+Production contracts live in `contracts/` (Foundry), verified on
+[Sourcify](https://sourcify.dev) and browsable on **Blockscout**.
+Machine-readable manifest: `contracts/deployments/production.json`.
+
+**Deployer:** `0x88cb5e1fAee0798E2780618CF4fD12933E385426`
+
+| Network | Contract | Address (Blockscout) | Role |
+| ------- | -------- | -------------------- | ---- |
+| **Base mainnet** (8453) | `PlaycePass` | [`0xC1eF…50FC`](https://base.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Soulbound memory / proof-of-presence mint |
+| **Base mainnet** (8453) | `StakeEscrow` | [`0x01D5…0823`](https://base.blockscout.com/address/0x01D514432b6694D8260bbA0fc2af3Cf327020823) | Blink USDC stake escrow + winner settlement |
+| **Arbitrum Sepolia** (421614) | `ProofSender` | [`0xC1eF…50FC`](https://arbitrum-sepolia.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Chainlink CCIP sender → Ethereum Sepolia |
+| **Arbitrum Sepolia** (421614) | `PlaycePass` | [`0x6847…7904`](https://arbitrum-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | Direct win badge mint (Arbitrum-repped battles) |
+| **Ethereum Sepolia** (11155111) | `ProofReceiverPass` | [`0x6847…7904`](https://eth-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | CCIP receiver — win badge mint (Ethereum-repped battles) |
+
+**CCIP lane:** Arbitrum Sepolia → Ethereum Sepolia. `ProofSender` must hold LINK
+on Arbitrum Sepolia for cross-chain sends (~4 LINK per message at current fees).
+
+---
+
 ## Features
 
 - **Gamified venue experience** — bold arcade UX, mobile-first, light & dark.
@@ -74,26 +102,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Smart contracts & onchain rewards
 
-Production contracts live in `contracts/` (Foundry). Source is verified on
-[Sourcify](https://sourcify.dev); browse verified contracts on **Blockscout**
-(links below).
-
-Machine-readable manifest: `contracts/deployments/production.json`.
-
-**Deployer:** `0x88cb5e1fAee0798E2780618CF4fD12933E385426`
-
-### Deployed contracts
-
-| Network | Contract | Address (Blockscout) | Role |
-| ------- | -------- | -------------------- | ---- |
-| **Base mainnet** (8453) | `PlaycePass` | [`0xC1eF…50FC`](https://base.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Soulbound memory / proof-of-presence mint |
-| **Base mainnet** (8453) | `StakeEscrow` | [`0x01D5…0823`](https://base.blockscout.com/address/0x01D514432b6694D8260bbA0fc2af3Cf327020823) | Blink USDC stake escrow + winner settlement |
-| **Arbitrum Sepolia** (421614) | `ProofSender` | [`0xC1eF…50FC`](https://arbitrum-sepolia.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Chainlink CCIP sender → Ethereum Sepolia |
-| **Arbitrum Sepolia** (421614) | `PlaycePass` | [`0x6847…7904`](https://arbitrum-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | Direct win badge mint (Arbitrum-repped battles) |
-| **Ethereum Sepolia** (11155111) | `ProofReceiverPass` | [`0x6847…7904`](https://eth-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | CCIP receiver — win badge mint (Ethereum-repped battles) |
-
-**CCIP lane:** Arbitrum Sepolia → Ethereum Sepolia. `ProofSender` must hold LINK
-on Arbitrum Sepolia for cross-chain sends (~4 LINK per message at current fees).
+Deployed addresses and demo transactions are listed
+[above](#deployed-contracts). The sections below cover each contract's role,
+source verification, and local/testnet deploys.
 
 ### Contract overview
 
