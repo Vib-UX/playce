@@ -22,7 +22,7 @@ export function SiteFooter() {
               Home
             </Link>
             <Link
-              href="/event/base-house-nyc"
+              href="/event/ethglobal-nyc"
               className="text-muted-foreground hover:text-foreground"
             >
               Featured venue
