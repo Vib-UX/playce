@@ -1,0 +1,73 @@
+{
+  "deployer": "0x88cb5e1fAee0798E2780618CF4fD12933E385426",
+  "updatedAt": "2026-06-14",
+  "networks": {
+    "base": {
+      "chainId": 8453,
+      "explorer": "https://basescan.org",
+      "contracts": {
+        "PlaycePass": {
+          "address": "0xC1eF7A81195538bc529b8Ed42182eC73764450FC",
+          "role": "Soulbound memory / proof-of-presence mint (Base mainnet)",
+          "verified": {
+            "sourcify": true,
+            "blockscout": "https://base.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC"
+          }
+        },
+        "StakeEscrow": {
+          "address": "0x01D514432b6694D8260bbA0fc2af3Cf327020823",
+          "role": "Blink USDC stake escrow + winner settlement",
+          "verified": {
+            "sourcify": true,
+            "blockscout": "https://base.blockscout.com/address/0x01D514432b6694D8260bbA0fc2af3Cf327020823"
+          }
+        }
+      }
+    },
+    "arbitrum-sepolia": {
+      "chainId": 421614,
+      "explorer": "https://sepolia.arbiscan.io",
+      "contracts": {
+        "ProofSender": {
+          "address": "0xC1eF7A81195538bc529b8Ed42182eC73764450FC",
+          "role": "Chainlink CCIP sender — dispatches win badges to Ethereum Sepolia",
+          "ccip": {
+            "router": "0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165",
+            "linkToken": "0xb1D4538B4571d411F07960EF2838Ce337FE1E80E",
+            "destSelector": "16015286601757825753"
+          },
+          "verified": {
+            "sourcify": true,
+            "blockscout": "https://arbitrum-sepolia.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC"
+          }
+        },
+        "PlaycePass": {
+          "address": "0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904",
+          "role": "Soulbound win badge — direct mint for Arbitrum-repped chain battles",
+          "verified": {
+            "sourcify": true,
+            "blockscout": "https://arbitrum-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904"
+          }
+        }
+      }
+    },
+    "sepolia": {
+      "chainId": 11155111,
+      "explorer": "https://sepolia.etherscan.io",
+      "contracts": {
+        "ProofReceiverPass": {
+          "address": "0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904",
+          "role": "CCIP receiver — soulbound win badge mint for Ethereum-repped chain battles",
+          "ccip": {
+            "router": "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59",
+            "allowedSourceSelector": "3478487238524512106"
+          },
+          "verified": {
+            "sourcify": true,
+            "blockscout": "https://eth-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904"
+          }
+        }
+      }
+    }
+  }
+}

@@ -37,7 +37,7 @@ artifact**.
 | Styling     | Tailwind CSS v4 + shadcn-style UI primitives |
 | Motion      | Framer Motion |
 | Auth/Wallet | Privy embedded wallets (`@privy-io/react-auth`, `@privy-io/wagmi`) |
-| Chain       | viem + wagmi, **Base Sepolia** (chain `84532`) |
+| Chain       | viem + wagmi — **Base mainnet** (8453) for proofs & staking; **Arbitrum Sepolia** + **Ethereum Sepolia** for chain-battle CCIP badges |
 | 3D          | Three.js via React Three Fiber + drei |
 | State       | Zustand (persisted rewards) |
 
@@ -84,14 +84,50 @@ browser geolocation + distance check, set `DEMO_FORCE_INSIDE_ZONE = false` in
 
 ## Smart contracts & onchain rewards
 
-The onchain reward is a real OpenZeppelin-based contract in `contracts/`.
+Production contracts live in `contracts/` (Foundry). Source is verified on
+[Sourcify](https://sourcify.dev); browse verified contracts on **Blockscout**
+(links below).
 
-### `PlaycePass` (`contracts/src/PlaycePass.sol`)
+Machine-readable manifest: `contracts/deployments/production.json`.
+
+**Deployer:** `0x88cb5e1fAee0798E2780618CF4fD12933E385426`
+
+### Deployed contracts
+
+| Network | Contract | Address (Blockscout) | Role |
+| ------- | -------- | -------------------- | ---- |
+| **Base mainnet** (8453) | `PlaycePass` | [`0xC1eF…50FC`](https://base.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Soulbound memory / proof-of-presence mint |
+| **Base mainnet** (8453) | `StakeEscrow` | [`0x01D5…0823`](https://base.blockscout.com/address/0x01D514432b6694D8260bbA0fc2af3Cf327020823) | Blink USDC stake escrow + winner settlement |
+| **Arbitrum Sepolia** (421614) | `ProofSender` | [`0xC1eF…50FC`](https://arbitrum-sepolia.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Chainlink CCIP sender → Ethereum Sepolia |
+| **Arbitrum Sepolia** (421614) | `PlaycePass` | [`0x6847…7904`](https://arbitrum-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | Direct win badge mint (Arbitrum-repped battles) |
+| **Ethereum Sepolia** (11155111) | `ProofReceiverPass` | [`0x6847…7904`](https://eth-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | CCIP receiver — win badge mint (Ethereum-repped battles) |
+
+**CCIP lane:** Arbitrum Sepolia → Ethereum Sepolia. `ProofSender` must hold LINK
+on Arbitrum Sepolia for cross-chain sends (~4 LINK per message at current fees).
+
+### Contract overview
+
+#### `PlaycePass` (`contracts/src/PlaycePass.sol`)
 
 - ERC-721 (`ERC721URIStorage` + `AccessControl`).
 - **One claim per `(eventId, wallet)`** — enforced onchain.
-- **Soulbound** — non-transferable, because a pass is proof *you* were there.
-- `mintClaim(to, eventId, uri)` is gated by `MINTER_ROLE`.
+- **Soulbound** — non-transferable proof *you* were there.
+- `mintClaim(to, eventId, uri)` gated by `MINTER_ROLE`.
+
+Used on **Base mainnet** for geofenced memory clips and on **Arbitrum Sepolia**
+for direct chain-battle win badges.
+
+#### `StakeEscrow` (`contracts/src/StakeEscrow.sol`)
+
+- Holds Blink-deposited USDC on Base mainnet.
+- Credits stakes per battle room; `settle(roomId, winner)` pays the pot to the
+  winner when they claim via `/api/reward/claim`.
+
+#### `ProofSender` / `ProofReceiverPass`
+
+- Chainlink CCIP cross-chain mint path for **Ethereum-repped** chain-battle wins.
+- Backend holds `SENDER_ROLE` on `ProofSender`; receiver mints soulbound badges
+  on Ethereum Sepolia when the CCIP message arrives.
 
 ```bash
 cd contracts
@@ -107,31 +143,52 @@ collecting is **gasless** for users.
 If no contract/minter is configured, `/api/claim` falls back to a mock mint so
 the flow still works locally.
 
-### Deploying to Base Sepolia
+### Verify source code
+
+Re-submit or refresh Sourcify verification (syncs to Blockscout):
 
 ```bash
-# 1. Fund the deployer address with Base Sepolia ETH (e.g. a Base faucet).
-# 2. Deploy + auto-wire NEXT_PUBLIC_PLAYCE_CONTRACT_ADDRESS into .env.local
-bash contracts/deploy.sh
-# 3. Verify on Basescan:
-cd contracts && forge verify-contract <ADDR> src/PlaycePass.sol:PlaycePass \
-  --chain 84532 --constructor-args $(cast abi-encode "constructor(address,address)" <DEPLOYER> <DEPLOYER>)
-# 4. Restart the dev server — rewards now mint for real.
+bash contracts/verify-all.sh
 ```
 
-## The 67 game (placeholder)
+Or verify one contract manually:
 
-`/play/67` ships a **playable placeholder**: lobby + p2p stake, a camera view
-with a sponsor AR overlay, a round timer, and **manual tap scoring**. The real
-gesture detection and onchain stake escrow are stubbed behind clear interfaces
-in `src/lib/games/six-seven.ts` so they can be swapped in.
+```bash
+cd contracts
+forge verify-contract 0xC1eF7A81195538bc529b8Ed42182eC73764450FC \
+  src/PlaycePass.sol:PlaycePass \
+  --chain base \
+  --verifier sourcify \
+  --constructor-args $(cast abi-encode "constructor(address,address)" \
+    0x88cb5e1fAee0798E2780618CF4fD12933E385426 \
+    0x88cb5e1fAee0798E2780618CF4fD12933E385426)
+```
+
+### Deploying locally / testnets
+
+```bash
+# Deploy PlaycePass + StakeEscrow to Base Sepolia (dev)
+bash contracts/deploy.sh
+
+# Deploy CCIP sender/receiver + badge contracts (testnets)
+bash contracts/deploy-ccip.sh
+bash contracts/deploy-badge.sh
+```
+
+Wire addresses into `.env.local` (see `.env.example`) and restart the dev server.
+
+## The 67 game
+
+`/play/67` is a full chain-battle mini-game: event-gated lobby, Blink USDC
+staking, sponsor AR skins (Chainlink / Pyth / Arbitrum / Ethereum), camera-based
+scoring, solo high-score mode, and onchain win badges + pot settlement via
+`/api/reward/claim`.
 
 ## Remaining mock surfaces
 
 - **Eligibility** — `lib/mock/whitelist.ts` and `lib/mock/geofence.ts` are stubs.
 - **Data** — back `lib/mock/events.ts`, `lib/mock/sponsors.ts`, and
   `lib/mock/games.ts` with a CMS or onchain registry; the types stay the same.
-- **67 game** — gesture scoring + stake escrow are placeholders.
 
 ---
 
