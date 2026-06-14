@@ -47,14 +47,16 @@ result, then ABI-encode `(matchId, winner)` — and prints the byte-identical
 report payload that would be signed and delivered to `ChessArbiter.onReport`:
 
 ```bash
-# Default: a real finished public game
+# Default: auto-fetches the token account's most recent game
 node simulate-local.mjs
 # Or point it at a specific game + players
 node simulate-local.mjs <gameId> <whiteAddr> <blackAddr>
 ```
 
-It reads `LICHESS_TOKEN` from `.env` when present (authenticated reads),
-otherwise falls back to anonymous public reads.
+With no `gameId` arg it resolves the latest game from the `LICHESS_TOKEN`
+account (in `.env`); pass a `gameId` to target a specific game. The token is
+also used for authenticated reads, otherwise it falls back to anonymous public
+reads.
 
 ## Simulate with the CRE CLI (local-first)
 

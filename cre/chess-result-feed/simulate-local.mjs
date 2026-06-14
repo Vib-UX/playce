@@ -46,6 +46,34 @@ function matchIdForGame(gameId) {
   return keccak256(toBytes(`chess:${gameId}`));
 }
 
+/**
+ * Resolve the most recent game id from the token's Lichess account. Used when
+ * no gameId is passed on the CLI, so the demo always targets your latest game.
+ */
+async function fetchLatestGameId() {
+  if (!TOKEN) {
+    throw new Error("No LICHESS_TOKEN — pass a gameId arg or set the token in .env");
+  }
+  const auth = { Authorization: `Bearer ${TOKEN}` };
+  const acct = await fetch(`${LICHESS_BASE}/api/account`, { headers: auth });
+  if (!acct.ok) throw new Error(`Lichess account lookup failed (${acct.status})`);
+  const { username } = await acct.json();
+  if (!username) throw new Error("Could not resolve Lichess username from token.");
+
+  const games = await fetch(
+    `${LICHESS_BASE}/api/games/user/${username}?max=1&pgnInJson=false`,
+    { headers: { ...auth, Accept: "application/x-ndjson" } },
+  );
+  if (!games.ok) throw new Error(`Lichess games lookup failed (${games.status})`);
+  const text = (await games.text()).trim();
+  const line = text.split("\n").find((l) => l.trim());
+  if (!line) throw new Error(`No games found for ${username}.`);
+  const { id } = JSON.parse(line);
+  if (!id) throw new Error("Latest game has no id.");
+  console.log(`Latest game for ${username}: ${id}`);
+  return id;
+}
+
 /** Fetch + normalize the authoritative Lichess result (mirrors lichess.ts). */
 async function getGameResult(gameId) {
   const url = `${LICHESS_BASE}/game/export/${encodeURIComponent(
@@ -77,23 +105,25 @@ async function getGameResult(gameId) {
 }
 
 // ── "Pending matches" the workflow would read from ChessArbiter.pendingMatches.
-// Override the first via CLI args; otherwise use a real finished public game.
+// Override the first via CLI args; otherwise auto-fetch the token's latest game.
 const [argGameId, argWhite, argBlack] = process.argv.slice(2);
 const SAMPLE_WHITE = "0x2637c4A0eE962d76c272f85aA9eF6538ccdF1dA9";
 const SAMPLE_BLACK = "0x000000000000000000000000000000000000dEaD";
-
-const pendingMatches = [
-  {
-    gameId: argGameId ?? "wYvLmAHI",
-    white: argWhite ?? SAMPLE_WHITE,
-    black: argBlack ?? SAMPLE_BLACK,
-  },
-];
 
 async function main() {
   console.log("─".repeat(64));
   console.log("Playce chess result feed — LOCAL SIMULATION");
   console.log(`Lichess auth: ${TOKEN ? "token present" : "anonymous"}`);
+
+  const gameId = argGameId ?? (await fetchLatestGameId());
+  const pendingMatches = [
+    {
+      gameId,
+      white: argWhite ?? SAMPLE_WHITE,
+      black: argBlack ?? SAMPLE_BLACK,
+    },
+  ];
+
   console.log(`Pending matches to resolve: ${pendingMatches.length}`);
   console.log("─".repeat(64));
 
