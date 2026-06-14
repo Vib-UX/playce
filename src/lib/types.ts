@@ -56,12 +56,38 @@ export interface CollectibleArt {
   modelUrl?: string;
 }
 
+/**
+ * How a finished 67 round settles, derived from the repped sponsor:
+ * - `chain`  — staked PvP. Winner takes the pot (settled on Base mainnet) plus
+ *   a soulbound win badge on the repped chain.
+ * - `memory` — proof-of-presence clip NFT only (no stake, no pot, no badge).
+ */
+export type BattleMode = "chain" | "memory";
+
+/**
+ * Reward-bearing chain a sponsor reps. Its presence on a `Sponsor` marks it as a
+ * "chain battle" sponsor (you can stake + win a badge on this chain).
+ */
+export interface SponsorRewardChain {
+  /** EVM chain id where the soulbound win badge is minted. */
+  chainId: number;
+  /** How the badge reaches the chain: a direct backend mint, or Chainlink CCIP. */
+  badgeMechanism: "direct" | "ccip";
+  /** Human label for the chain (e.g. "Arbitrum Sepolia"). */
+  label: string;
+  /** Explorer base URL for badge links (no trailing slash). */
+  explorerBaseUrl: string;
+}
+
 /** A chain / product / oracle repping at a venue (e.g. Chainlink, Pyth, Blink). */
 export interface Sponsor {
   id: string;
   name: string;
   /** What the sponsor is, for the "rep your chain/product" framing. */
   kind: "chain" | "oracle" | "product";
+  /** Display grouping for the "rep" rail (e.g. "Wallet", "Chain", "DeFi").
+   *  A category can hold many sponsors — you rep/shill any one of them. */
+  category: string;
   tagline: string;
   /** Brand accent used for chips, AR skins, and gradients. */
   brandColor: string;
@@ -69,6 +95,9 @@ export interface Sponsor {
   logoUrl?: string;
   /** 3D AR skin (.glb in /public/models) shown over the camera in games. */
   arModelUrl?: string;
+  /** When set, repping this sponsor is a staked "chain battle" that rewards the
+   *  winner on this chain. Absent => "memory battle" (proof clip only). */
+  rewardChain?: SponsorRewardChain;
 }
 
 /** A reward an attendee can unlock at a venue, usually backed by a sponsor. */

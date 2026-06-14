@@ -18,6 +18,30 @@ export const GAMES: MiniGame[] = [
     status: "live",
   },
   {
+    id: "chess",
+    slug: "chess",
+    name: "Chess Blitz",
+    tagline: "Speed chess, head-to-head, repping your chain.",
+    description:
+      "A blitz chess showdown played at the venue. Stake head-to-head, rep your chain, and take the pot plus a win badge — coming soon.",
+    players: 2,
+    staked: true,
+    sponsorIds: ["arbitrum", "ethereum", "base"],
+    status: "soon",
+  },
+  {
+    id: "basketball",
+    slug: "basketball",
+    name: "Knicks Buzzer Beater",
+    tagline: "Sink the buzzer beater for the Knicks.",
+    description:
+      "A camera-powered basketball mini-game themed for the New York Knicks. Time your shot, beat the buzzer, and climb the venue leaderboard — coming soon.",
+    players: 2,
+    staked: true,
+    sponsorIds: ["arbitrum", "ethereum"],
+    status: "soon",
+  },
+  {
     id: "reprace",
     slug: "rep-race",
     name: "Rep Race",
