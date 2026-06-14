@@ -47,16 +47,31 @@ result, then ABI-encode `(matchId, winner)` — and prints the byte-identical
 report payload that would be signed and delivered to `ChessArbiter.onReport`:
 
 ```bash
-# Default: auto-fetches the token account's most recent game
+# Default: auto-fetches the token account's most recent game (report only)
 node simulate-local.mjs
 # Or point it at a specific game + players
 node simulate-local.mjs <gameId> <whiteAddr> <blackAddr>
+# Full CRE flow incl. the on-chain write (writeReport -> onReport -> paid)
+node simulate-local.mjs --settle
 ```
 
 With no `gameId` arg it resolves the latest game from the `LICHESS_TOKEN`
 account (in `.env`); pass a `gameId` to target a specific game. The token is
 also used for authenticated reads, otherwise it falls back to anonymous public
 reads.
+
+### `--settle` — the full flow, end to end
+
+`--settle` completes the workflow's last capability (`evmClient.writeReport()`)
+locally: it forks Base mainnet with **anvil**, deploys `ChessArbiter` against the
+**live** `StakeEscrow`, grants it `OPERATOR_ROLE`, registers the match, and
+delivers the report through `onReport` — finishing with the winner's USDC
+balance increased by the pot. No DON, no broadcast.
+
+Requires `anvil` (Foundry) and a built arbiter artifact
+(`cd contracts && forge build`). Real parts: the live escrow bytecode/balances,
+the arbiter logic, the report encoding, the payout. Simulated: the DON
+signature (we impersonate the forwarder) and the USDC deposits.
 
 ## Simulate with the CRE CLI (local-first)
 
