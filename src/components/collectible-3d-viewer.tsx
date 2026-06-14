@@ -36,6 +36,11 @@ interface Props {
   /** Explicit `.glb` to render (in /public/models). Falls back to the art's
    *  model, then the global default, then the lightweight CSS artifact. */
   modelUrl?: string;
+  /** Render multiple `.glb` models side by side (e.g. a paired showcase). When
+   *  provided, takes precedence over `modelUrl`. */
+  modelUrls?: string[];
+  /** Optional per-model size multipliers, index-aligned with `modelUrls`. */
+  modelScales?: number[];
   /** Multiplier on the artifact's size. */
   modelScale?: number;
   /** Auto-rotate speed (radians/sec) for a `.glb` model. */
@@ -170,10 +175,14 @@ export function Collectible3DViewer({
   imageUrl,
   videoUrl,
   modelUrl,
+  modelUrls,
+  modelScales,
   modelScale = 1,
   spin,
 }: Props) {
+  const hasMany = Boolean(modelUrls && modelUrls.length > 0);
   const model = modelUrl ?? art.modelUrl ?? COLLECTIBLE_MODEL_URL;
+  const showScene = hasMany || Boolean(model);
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
@@ -217,13 +226,15 @@ export function Collectible3DViewer({
         )
       )}
 
-      {model ? (
+      {showScene ? (
         <div className="absolute inset-0">
           <CollectibleScene
             art={art}
             reveal={reveal}
             interactive={interactive}
-            modelUrl={model}
+            modelUrl={hasMany ? undefined : model ?? undefined}
+            modelUrls={hasMany ? modelUrls : undefined}
+            modelScales={hasMany ? modelScales : undefined}
             modelScale={modelScale}
             spin={spin}
           />
@@ -235,7 +246,7 @@ export function Collectible3DViewer({
       {hint && interactive && (
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
           <span className="rounded-full bg-background/70 px-3 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
-            {model ? "Drag to explore your collectible" : "Your memory artifact"}
+            {showScene ? "Drag to explore your collectible" : "Your memory artifact"}
           </span>
         </div>
       )}

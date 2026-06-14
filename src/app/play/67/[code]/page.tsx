@@ -16,18 +16,30 @@ import {
   Trophy,
 } from "lucide-react";
 import type { CollectibleArt, Sponsor } from "@/lib/types";
-import { SPONSORS } from "@/lib/mock/sponsors";
+import { SPONSORS, getSponsorById } from "@/lib/mock/sponsors";
+import {
+  battleModeForSponsorId,
+  isChainBattleSponsorId,
+  rewardChainForSponsorId,
+} from "@/lib/battle";
 import { usePlayceAuth } from "@/lib/auth/context";
 import { PRIVY_ENABLED } from "@/lib/auth/context";
 import { useStakeDeposit } from "@/lib/blink/use-stake-deposit";
-import { BLINK_STAKING_ENABLED, STAKE_AMOUNT } from "@/lib/blink/config";
+import {
+  BLINK_DEV_MOCK_STAKE,
+  BLINK_STAKING_ENABLED,
+  STAKE_AMOUNT,
+} from "@/lib/blink/config";
 import { ACTIVE_CHAIN } from "@/lib/chain";
 import { Collectible3DViewer } from "@/components/collectible-3d-viewer";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   getClientId,
+  GAME_RECORD_MS,
   ROUND_SECONDS,
+  WINNER_SHOWCASE_MODELS,
+  WINNER_SHOWCASE_MODEL_SCALES,
   type PeerStatus,
   type Role,
   type ServerMessage,
@@ -48,6 +60,81 @@ import {
 type ConnState = "connecting" | "online" | "reconnecting" | "failed";
 
 const MAX_RECONNECT_ATTEMPTS = 12;
+
+/** Lifecycle of the auto proof-of-presence capture + mint. */
+type ProofStatus =
+  | "idle"
+  | "recording"
+  | "uploading"
+  | "minting"
+  | "done"
+  | "error";
+
+interface ProofNft {
+  name: string;
+  image: string;
+  animationUrl?: string;
+  txHash: string;
+  blockExplorerUrl: string;
+  tokenId: string;
+  metadataURI: string;
+  onchain: boolean;
+  /** Set when the proof was dispatched cross-chain via Chainlink CCIP. */
+  crossChain?: boolean;
+  ccip?: { messageId: string; explorerUrl: string; sourceChain: string };
+}
+
+/** Lifecycle of the chain-battle reward claim (pot settle + win badge). */
+type ClaimStatus = "idle" | "claiming" | "done" | "error";
+
+interface ClaimResult {
+  /** USDC pot settlement on Base mainnet. */
+  pot?: { txHash: string; explorerUrl: string; amount?: string };
+  /** Soulbound win badge on the repped chain. */
+  badge?: {
+    mechanism: "direct" | "ccip";
+    chainLabel: string;
+    txHash?: string;
+    explorerUrl?: string;
+    /** CCIP message tracking when the badge crosses chains. */
+    ccip?: { messageId: string; explorerUrl: string };
+  };
+  /** Set when a real badge mint was attempted but reverted (no link to show). */
+  badgeError?: string;
+  error?: string;
+}
+
+/** Source crop so the video fills a w×h box preserving aspect (object-fit: cover). */
+function coverCrop(sw: number, sh: number, dw: number, dh: number) {
+  const sAspect = sw / sh;
+  const dAspect = dw / dh;
+  let cw: number;
+  let ch: number;
+  if (sAspect > dAspect) {
+    ch = sh;
+    cw = sh * dAspect;
+  } else {
+    cw = sw;
+    ch = sw / dAspect;
+  }
+  return { sx: (sw - cw) / 2, sy: (sh - ch) / 2, sw: cw, sh: ch };
+}
+
+/** Pick the best-supported recording container for this browser. */
+function pickMimeType(): string {
+  if (typeof MediaRecorder === "undefined") return "";
+  const candidates = [
+    "video/mp4;codecs=h264",
+    "video/mp4",
+    "video/webm;codecs=vp9",
+    "video/webm;codecs=vp8",
+    "video/webm",
+  ];
+  for (const t of candidates) {
+    if (MediaRecorder.isTypeSupported?.(t)) return t;
+  }
+  return "";
+}
 
 function hexToHue(hex: string): number {
   const m = hex.replace("#", "");
@@ -100,8 +187,10 @@ export default function SixSevenRoomPage() {
 
 function SixSevenRoom() {
   const params = useParams<{ code: string }>();
-  const search = useSearchParams();
   const code = String(params.code ?? "").toUpperCase();
+  const searchParams = useSearchParams();
+  const repSponsorId = searchParams.get("rep") ?? undefined;
+  const eventSlug = searchParams.get("event") ?? undefined;
   const { email, wallet, getAccessToken, mode, authenticated } = usePlayceAuth();
   const {
     stake,
@@ -116,10 +205,24 @@ function SixSevenRoom() {
   const [stakeMessage, setStakeMessage] = useState<string | null>(null);
   const youLabel = email ? email.split("@")[0] : "You";
 
-  const sponsor = useMemo(() => {
-    const rep = search.get("rep");
-    return SPONSORS.find((s) => s.id === rep) ?? SPONSORS[0];
-  }, [search]);
+  // Per-hand AR skins reflect the repped sponsor:
+  //  - chain battle (Arbitrum / Ethereum) -> Arb vs Eth, mirroring Pyth vs
+  //    Chainlink so each hand wears a rival chain.
+  //  - other sponsor with a .glb (Privy, Dynamic, …) -> both hands wear it.
+  //  - fallback -> the bundled Pyth + Chainlink skins.
+  const handSponsors = useMemo(() => {
+    const chainlink = SPONSORS.find((s) => s.id === "chainlink") ?? SPONSORS[0];
+    const pyth = SPONSORS.find((s) => s.id === "pyth") ?? SPONSORS[0];
+    if (isChainBattleSponsorId(repSponsorId)) {
+      const arb = getSponsorById("arbitrum");
+      const eth = getSponsorById("ethereum");
+      if (arb?.arModelUrl && eth?.arModelUrl) return [arb, eth] as const;
+    }
+    const repped = repSponsorId ? getSponsorById(repSponsorId) : undefined;
+    if (repped?.arModelUrl) return [repped, repped] as const;
+    // [skin0 -> screen-right -> Pyth, skin1 -> screen-left -> Chainlink]
+    return [pyth, chainlink] as const;
+  }, [repSponsorId]);
 
   // ── Refs ──────────────────────────────────────────────────────────────
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -135,6 +238,14 @@ function SixSevenRoom() {
   const fatalRef = useRef<string | null>(null);
   const skin0Ref = useRef<HTMLDivElement>(null);
   const skin1Ref = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  // Proof-of-presence auto-recorder machinery.
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recDrawRafRef = useRef<number | null>(null);
+  const recStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recTickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recStartedRef = useRef(false);
 
   // ── State ─────────────────────────────────────────────────────────────
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
@@ -150,6 +261,14 @@ function SixSevenRoom() {
   const [inviteUrl, setInviteUrl] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [soloMode, setSoloMode] = useState(false);
+
+  const [proofStatus, setProofStatus] = useState<ProofStatus>("idle");
+  const [proofSecondsLeft, setProofSecondsLeft] = useState(0);
+  const [proofNft, setProofNft] = useState<ProofNft | null>(null);
+
+  const [claimStatus, setClaimStatus] = useState<ClaimStatus>("idle");
+  const [claimResult, setClaimResult] = useState<ClaimResult | null>(null);
 
   useEffect(() => {
     runningRef.current = server?.status === "running";
@@ -162,7 +281,9 @@ function SixSevenRoom() {
   // ── Invite link + QR ──────────────────────────────────────────────────
   useEffect(() => {
     if (!code) return;
-    const url = `${window.location.origin}/play/67/${code}`;
+    const url = `${window.location.origin}/play/67/${code}${
+      eventSlug ? `?event=${eventSlug}` : ""
+    }`;
     setInviteUrl(url);
     QRCode.toDataURL(url, {
       width: 256,
@@ -171,7 +292,7 @@ function SixSevenRoom() {
     })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(null));
-  }, [code]);
+  }, [code, eventSlug]);
 
   // ── WebSocket (authoritative game state) ──────────────────────────────
   useEffect(() => {
@@ -236,6 +357,23 @@ function SixSevenRoom() {
       }
     };
   }, [code]);
+
+  // ── Identify this seat (wallet + repped sponsor) for the leaderboard ──
+  // Re-sent whenever the socket comes online or the wallet/rep changes so a
+  // finished round can be attributed to the right player + chain.
+  useEffect(() => {
+    if (conn !== "online") return;
+    if (wsRef.current?.readyState !== 1) return;
+    if (!wallet && !repSponsorId) return;
+    wsRef.current.send(
+      JSON.stringify({
+        type: "identify",
+        wallet,
+        sponsorId: repSponsorId,
+        battleMode: battleModeForSponsorId(repSponsorId),
+      }),
+    );
+  }, [conn, wallet, repSponsorId]);
 
   // ── Camera enumeration + landmarker init (once) ───────────────────────
   useEffect(() => {
@@ -417,18 +555,26 @@ function SixSevenRoom() {
   };
 
   const handleStake = async () => {
-    if (!role || !code || !canStake) return;
+    if (!role || !code) return;
+    if (!BLINK_DEV_MOCK_STAKE && !canStake) return;
     setStakeMessage(null);
     try {
-      const depositResult = await stake({
-        amount: STAKE_AMOUNT,
-        roomCode: code,
-        role,
-      });
-      const transferId = depositResult.transfer?.id;
-      if (!transferId) {
-        setStakeMessage("Deposit completed but no transfer id was returned.");
-        return;
+      let transferId: string | undefined;
+      if (BLINK_DEV_MOCK_STAKE) {
+        // Dev/test: no real Blink deposit — synthesize a transfer id and let the
+        // confirm endpoint record the stake without an on-chain credit.
+        transferId = `dev-mock-${role}-${code}`;
+      } else {
+        const depositResult = await stake({
+          amount: STAKE_AMOUNT,
+          roomCode: code,
+          role,
+        });
+        transferId = depositResult.transfer?.id;
+        if (!transferId) {
+          setStakeMessage("Deposit completed but no transfer id was returned.");
+          return;
+        }
       }
 
       setStakeConfirming(true);
@@ -454,7 +600,11 @@ function SixSevenRoom() {
         );
         return;
       }
-      setStakeMessage("Stake confirmed — waiting for opponent.");
+      setStakeMessage(
+        BLINK_DEV_MOCK_STAKE
+          ? "Stake confirmed (dev mock) — you can start."
+          : "Stake confirmed — waiting for opponent.",
+      );
       refreshStakeStatus();
     } catch (err) {
       setStakeMessage(err instanceof Error ? err.message : "Stake failed.");
@@ -481,8 +631,9 @@ function SixSevenRoom() {
   };
   const stakes = server?.stakes ?? { host: false, guest: false };
   const myStaked = role === "host" ? stakes.host : role === "guest" ? stakes.guest : false;
-  const opponentStaked = role === "host" ? stakes.guest : role === "guest" ? stakes.host : false;
-  const bothStaked = stakes.host && stakes.guest;
+  const rawOpponentStaked = role === "host" ? stakes.guest : role === "guest" ? stakes.host : false;
+  // Continuing alone: the house is the opponent and is treated as auto-staked.
+  const opponentStaked = rawOpponentStaked || soloMode;
   const opponentStatus: PeerStatus = role === "host" ? peers.guest : peers.host;
   const opponentReady = opponentStatus === "online";
 
@@ -497,6 +648,44 @@ function SixSevenRoom() {
   const youWon = winner !== null && winner === myIdx;
   const youLost = winner !== null && winner === oppIdx;
   const tied = gameStatus === "finished" && winner === null;
+
+  // ── Battle type (chain vs memory) + claim eligibility ────────────────────
+  const battleMode = server?.battleMode ?? "memory";
+  const solo = server?.solo ?? false;
+  const winnerWallet = server?.winnerWallet ?? null;
+  const winnerSponsorId = server?.winnerSponsorId ?? null;
+  // Chain battles are always real matches with a stake + reward, even when the
+  // host "continues" alone (the opponent is the house). Only a memory run with
+  // no guest stays a free solo high-score moment.
+  const isChainBattle = battleMode === "chain";
+  const soloMemory = solo && battleMode !== "chain";
+  const winnerRewardChain = winnerSponsorId
+    ? rewardChainForSponsorId(winnerSponsorId)
+    : undefined;
+  // Winner showcase reflects the winning player's repped sponsor: Chainlink ->
+  // chainlink.glb, Arbitrum -> arb.glb, etc., paired with the event artifact.
+  // Falls back to the local rep (solo) and finally to Chainlink.
+  const showcaseSponsorId = winnerSponsorId ?? repSponsorId ?? null;
+  const showcaseSponsor = showcaseSponsorId
+    ? getSponsorById(showcaseSponsorId)
+    : undefined;
+  const showcaseModels = [
+    showcaseSponsor?.arModelUrl ?? WINNER_SHOWCASE_MODELS[0],
+    "/models/ethglobal-nyc.glb",
+  ];
+  // The winning player may claim the pot + soulbound badge via their wallet.
+  const claimable =
+    isChainBattle && gameStatus === "finished" && youWon && Boolean(winnerWallet);
+
+  // Staking gates every chain battle. A real opponent triggers it; when the
+  // host chooses to continue alone the house stands in, so the gate still
+  // applies (the house side is auto-staked).
+  const opponentPresent =
+    (role === "host" ? peers.guest : peers.host) !== "empty";
+  const stakeGateActive =
+    BLINK_STAKING_ENABLED &&
+    battleMode === "chain" &&
+    (opponentPresent || soloMode);
 
   const showInvite = role === "host" && peers.guest === "empty";
 
@@ -514,6 +703,281 @@ function SixSevenRoom() {
         : conn === "reconnecting"
           ? { tone: "amber", text: "Reconnecting…" }
           : { tone: "red", text: "Disconnected" };
+
+  // ── Proof-of-presence auto-recorder ───────────────────────────────────
+  const recorderSupported =
+    typeof window !== "undefined" &&
+    typeof MediaRecorder !== "undefined" &&
+    typeof HTMLCanvasElement !== "undefined" &&
+    typeof HTMLCanvasElement.prototype.captureStream === "function";
+
+  const uploadAndMintProof = useCallback(
+    async (blob: Blob, type: string) => {
+      setProofStatus("uploading");
+      try {
+        const ext = type.includes("mp4") ? "mp4" : "webm";
+        const form = new FormData();
+        form.append("file", blob, `playce-67-${code || "room"}.${ext}`);
+        const upRes = await fetch("/api/upload", { method: "POST", body: form });
+        if (!upRes.ok) throw new Error(`Upload failed (${upRes.status})`);
+        const clip = (await upRes.json()) as {
+          ipfsUri: string;
+          gatewayUrl: string;
+        };
+
+        const playerAddress = stakePlayerAddress ?? wallet;
+        const token = await getAccessToken().catch(() => null);
+        if (!playerAddress || !token) {
+          // No linked Playce wallet/session — keep the clip, skip the mint.
+          setProofStatus("error");
+          return;
+        }
+
+        setProofStatus("minting");
+        const mintRes = await fetch("/api/proof", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            playerAddress,
+            roomCode: code,
+            clipIpfsUri: clip.ipfsUri,
+            clipGatewayUrl: clip.gatewayUrl,
+            sponsorId: repSponsorId,
+          }),
+        });
+        const data = (await mintRes.json().catch(() => ({}))) as {
+          nft?: ProofNft;
+          crossChain?: boolean;
+          ccip?: { messageId: string; explorerUrl: string; sourceChain: string };
+          error?: string;
+        };
+        if (!mintRes.ok || !data.nft) {
+          throw new Error(data.error ?? "Mint failed");
+        }
+        setProofNft({
+          ...data.nft,
+          crossChain: data.crossChain,
+          ccip: data.ccip,
+        });
+        setProofStatus("done");
+      } catch {
+        setProofStatus("error");
+      }
+    },
+    [code, stakePlayerAddress, wallet, getAccessToken, repSponsorId],
+  );
+
+  // ── Chain-battle reward claim (Privy-authed) ──────────────────────────
+  // The winner authenticates with their embedded wallet; the backend settles
+  // the Base-mainnet pot and mints the soulbound win badge on the repped chain
+  // (direct on Arbitrum Sepolia, or Chainlink CCIP for Ethereum Sepolia).
+  const claimReward = useCallback(async () => {
+    const claimAddress = stakePlayerAddress ?? wallet;
+    if (!claimAddress) {
+      setClaimResult({ error: "Connect your wallet to claim." });
+      setClaimStatus("error");
+      return;
+    }
+    setClaimStatus("claiming");
+    setClaimResult(null);
+    try {
+      const token = await getAccessToken().catch(() => null);
+      if (!token) throw new Error("Sign in to claim your reward.");
+      const res = await fetch("/api/reward/claim", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          roomCode: code,
+          winnerAddress: claimAddress,
+          // Sent so a continue/solo claim can still mint the badge on the
+          // repped chain when the authoritative WS record isn't available.
+          sponsorId: winnerSponsorId ?? repSponsorId ?? undefined,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as ClaimResult;
+      if (!res.ok) throw new Error(data.error ?? "Claim failed");
+      setClaimResult(data);
+      setClaimStatus("done");
+    } catch (err) {
+      setClaimResult({
+        error: err instanceof Error ? err.message : "Claim failed",
+      });
+      setClaimStatus("error");
+    }
+  }, [code, stakePlayerAddress, wallet, getAccessToken, winnerSponsorId, repSponsorId]);
+
+  const teardownProofRecording = useCallback(() => {
+    if (recDrawRafRef.current !== null) {
+      cancelAnimationFrame(recDrawRafRef.current);
+      recDrawRafRef.current = null;
+    }
+    if (recStopTimerRef.current) {
+      clearTimeout(recStopTimerRef.current);
+      recStopTimerRef.current = null;
+    }
+    if (recTickTimerRef.current) {
+      clearTimeout(recTickTimerRef.current);
+      recTickTimerRef.current = null;
+    }
+    const rec = recorderRef.current;
+    if (rec && rec.state !== "inactive") {
+      try {
+        rec.stop();
+      } catch {
+        /* already stopped */
+      }
+    }
+    recorderRef.current = null;
+  }, []);
+
+  const startProofRecording = useCallback(() => {
+    const stage = stageRef.current;
+    const video = videoRef.current;
+    if (!stage || !video || !recorderSupported) return;
+    if (recorderRef.current) return;
+
+    const scale = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = stage.getBoundingClientRect();
+    const W = Math.max(2, Math.round(rect.width * scale));
+    const H = Math.max(2, Math.round(rect.height * scale));
+
+    const out = document.createElement("canvas");
+    out.width = W;
+    out.height = H;
+    const ctx = out.getContext("2d");
+    if (!ctx) return;
+
+    // Composite the live (mirrored) feed + landmarks + hand skins + watermark
+    // onto an offscreen canvas, independent of the detection RAF loop.
+    const draw = () => {
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (vw && vh) {
+        const crop = coverCrop(vw, vh, W, H);
+        ctx.save();
+        ctx.translate(W, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, W, H);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, W, H);
+      }
+      const lc = canvasRef.current;
+      if (lc && lc.width) {
+        ctx.save();
+        ctx.translate(W, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(lc, 0, 0, W, H);
+        ctx.restore();
+      }
+      for (const ref of [skin0Ref, skin1Ref]) {
+        const div = ref.current;
+        if (!div || div.style.opacity === "0") continue;
+        const gl = div.querySelector("canvas");
+        if (!gl) continue;
+        const lx = parseFloat(div.style.left);
+        const ty = parseFloat(div.style.top);
+        if (Number.isNaN(lx) || Number.isNaN(ty)) continue;
+        const s = Math.round(W * 0.2);
+        ctx.drawImage(gl, (lx / 100) * W - s / 2, (ty / 100) * H - s / 2, s, s);
+      }
+      const pad = Math.round(W * 0.035);
+      ctx.save();
+      ctx.textBaseline = "bottom";
+      ctx.shadowColor = "rgba(0,0,0,0.55)";
+      ctx.shadowBlur = Math.round(W * 0.02);
+      ctx.font = `600 ${Math.round(W * 0.034)}px ui-sans-serif, system-ui, sans-serif`;
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.fillText("Playce · The 67 · ETHGlobal NYC", pad, H - pad);
+      ctx.restore();
+      recDrawRafRef.current = requestAnimationFrame(draw);
+    };
+    draw();
+
+    let stream: MediaStream;
+    try {
+      stream = out.captureStream(30);
+    } catch {
+      teardownProofRecording();
+      return;
+    }
+
+    const mimeType = pickMimeType();
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType, videoBitsPerSecond: 4_000_000 } : undefined,
+      );
+    } catch {
+      teardownProofRecording();
+      return;
+    }
+
+    const chunks: BlobPart[] = [];
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
+    recorder.onstop = () => {
+      if (recDrawRafRef.current !== null) {
+        cancelAnimationFrame(recDrawRafRef.current);
+        recDrawRafRef.current = null;
+      }
+      const blobType = recorder.mimeType || mimeType || "video/webm";
+      const blob = new Blob(chunks, { type: blobType });
+      void uploadAndMintProof(blob, blobType);
+    };
+
+    recorderRef.current = recorder;
+    recorder.start();
+    setProofStatus("recording");
+
+    const startedAt = performance.now();
+    setProofSecondsLeft(Math.ceil(GAME_RECORD_MS / 1000));
+    const tick = () => {
+      const left = Math.max(
+        0,
+        Math.ceil((GAME_RECORD_MS - (performance.now() - startedAt)) / 1000),
+      );
+      setProofSecondsLeft(left);
+      if (left > 0 && recorderRef.current?.state === "recording") {
+        recTickTimerRef.current = setTimeout(tick, 250);
+      }
+    };
+    tick();
+
+    recStopTimerRef.current = setTimeout(() => {
+      if (recorderRef.current?.state === "recording") {
+        recorderRef.current.stop();
+      }
+    }, GAME_RECORD_MS);
+  }, [recorderSupported, teardownProofRecording, uploadAndMintProof]);
+
+  useEffect(() => {
+    // Auto-capture once the round actually starts — works for solo and PvP, and
+    // the 15s clip lines up with real gameplay.
+    if (gameStatus !== "running") {
+      // Reset so the next round (host "Play again") records again.
+      if (gameStatus === "waiting") {
+        recStartedRef.current = false;
+        setProofStatus("idle");
+        setProofNft(null);
+      }
+      return;
+    }
+    if (recStartedRef.current || !ready || !recorderSupported) return;
+    recStartedRef.current = true;
+    startProofRecording();
+  }, [gameStatus, ready, recorderSupported, startProofRecording]);
+
+  useEffect(() => () => teardownProofRecording(), [teardownProofRecording]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
@@ -588,7 +1052,10 @@ function SixSevenRoom() {
       </div>
 
       {/* Camera stage */}
-      <div className="relative mt-5 aspect-[3/4] w-full overflow-hidden rounded-3xl border border-border bg-black sm:aspect-video">
+      <div
+        ref={stageRef}
+        className="relative mt-5 aspect-[3/4] w-full overflow-hidden rounded-3xl border border-border bg-black sm:aspect-video"
+      >
         <video
           ref={videoRef}
           playsInline
@@ -611,8 +1078,8 @@ function SixSevenRoom() {
               style={{ left: "50%", top: "50%" }}
             >
               <Collectible3DViewer
-                art={sponsorArt(sponsor)}
-                modelUrl={sponsor.arModelUrl}
+                art={sponsorArt(handSponsors[i])}
+                modelUrl={handSponsors[i].arModelUrl}
                 interactive={false}
                 hint={false}
                 spin={1.8}
@@ -626,6 +1093,36 @@ function SixSevenRoom() {
         <div className="absolute left-2 top-2 rounded-full bg-black/70 px-3 py-1 font-mono text-xs text-white">
           {statusText(status)}
         </div>
+
+        {/* Proof-of-presence capture indicator */}
+        {proofStatus !== "idle" && (
+          <div className="absolute right-2 top-2 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+            {proofStatus === "recording" ? (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 animate-pulse rounded-full bg-red-500" />
+                REC · {proofSecondsLeft}s
+              </span>
+            ) : proofStatus === "uploading" ? (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 animate-pulse rounded-full bg-amber-400" />
+                Pinning your clip…
+              </span>
+            ) : proofStatus === "minting" ? (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2 animate-pulse rounded-full bg-amber-400" />
+                Minting your proof…
+              </span>
+            ) : proofStatus === "done" ? (
+              <span className="inline-flex items-center gap-1.5 text-emerald-300">
+                <Check className="size-3.5" /> Proof minted
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-white/70">
+                Clip saved
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Hands seesaw indicator */}
         {status.kind === "tilt" && (
@@ -669,8 +1166,8 @@ function SixSevenRoom() {
         )}
       </div>
 
-      {/* Staking */}
-      {BLINK_STAKING_ENABLED && gameStatus !== "running" && role && (
+      {/* Staking — chain battles (PvP) only. */}
+      {stakeGateActive && gameStatus !== "running" && role && (
         <div className="mt-5 rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center gap-3">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_oklab,var(--brand)_12%,transparent)] text-[var(--brand)]">
@@ -678,13 +1175,21 @@ function SixSevenRoom() {
             </span>
             <div className="flex-1">
               <p className="font-medium">Winner-takes-all stake</p>
-              <p className="text-xs text-muted-foreground">
-                Both players stake {STAKE_AMOUNT} USDC via Blink before the host can start.
-                When you stake, MetaMask will prompt you to switch to{" "}
-                <span className="text-foreground">{ACTIVE_CHAIN.name}</span> — approve that
-                first, then authorize USDC. You need USDC and a little ETH for gas on
-                the same MetaMask account linked to Playce.
-              </p>
+              {BLINK_DEV_MOCK_STAKE ? (
+                <p className="text-xs text-muted-foreground">
+                  Dev/test mode: tap to mark yourself staked — no real Blink
+                  transaction or USDC is moved. The host can start solo or in PvP
+                  once staked.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Both players stake {STAKE_AMOUNT} USDC via Blink before the host can start.
+                  When you stake, MetaMask will prompt you to switch to{" "}
+                  <span className="text-foreground">{ACTIVE_CHAIN.name}</span> — approve that
+                  first, then authorize USDC. You need USDC and a little ETH for gas on
+                  the same MetaMask account linked to Playce.
+                </p>
+              )}
             </div>
           </div>
 
@@ -710,7 +1215,7 @@ function SixSevenRoom() {
                   className="w-full"
                   onClick={handleStake}
                   disabled={
-                    !canStake ||
+                    (!BLINK_DEV_MOCK_STAKE && !canStake) ||
                     stakeActive ||
                     stakeConfirming ||
                     stakeStatus === "signer-loading" ||
@@ -719,7 +1224,9 @@ function SixSevenRoom() {
                 >
                   {stakeStatus === "signer-loading" || stakeActive || stakeConfirming
                     ? "Preparing…"
-                    : `Stake $${STAKE_AMOUNT} USDC`}
+                    : BLINK_DEV_MOCK_STAKE
+                      ? `Stake $${STAKE_AMOUNT} (dev mock)`
+                      : `Stake $${STAKE_AMOUNT} USDC`}
                 </Button>
               )}
             </div>
@@ -753,18 +1260,19 @@ function SixSevenRoom() {
             className="w-full"
             onClick={sendStart}
             disabled={
-              !opponentReady ||
               !ready ||
               conn !== "online" ||
-              (BLINK_STAKING_ENABLED && !bothStaked)
+              (stakeGateActive && (!myStaked || !opponentStaked))
             }
           >
             <Hand className="size-4" />
             {gameStatus === "finished"
               ? "Play again"
-              : BLINK_STAKING_ENABLED && !bothStaked
-                ? "Waiting for stakes…"
-                : "Start the 67"}
+              : stakeGateActive && !myStaked
+                ? "Stake to start"
+                : stakeGateActive && !opponentStaked
+                  ? "Waiting for opponent's stake…"
+                  : "Start the 67"}
           </Button>
         )}
         {role === "host" &&
@@ -812,7 +1320,7 @@ function SixSevenRoom() {
       )}
 
       {/* Invite overlay (host waiting for opponent) */}
-      {showInvite && !fatalError && (
+      {showInvite && !fatalError && !soloMode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-4 backdrop-blur">
           <div className="w-full max-w-sm rounded-3xl border border-border bg-card p-6 text-center card-glow">
             <p className="text-xs uppercase tracking-widest text-[var(--brand)]">
@@ -844,9 +1352,21 @@ function SixSevenRoom() {
                 {copied ? "Copied" : "Copy"}
               </Button>
             </div>
+            <Button
+              variant="gradient"
+              size="lg"
+              className="mt-4 w-full"
+              onClick={() => setSoloMode(true)}
+            >
+              <Hand className="size-4" /> Continue
+            </Button>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Jump straight into the match — record your clip and claim your
+              reward. An opponent can still join anytime.
+            </p>
             <Link
-              href="/play/67"
-              className="mt-4 inline-block text-xs text-muted-foreground hover:text-foreground"
+              href={eventSlug ? `/play/67?event=${eventSlug}` : "/play/67"}
+              className="mt-3 inline-block text-xs text-muted-foreground hover:text-foreground"
             >
               ← Leave room
             </Link>
@@ -862,20 +1382,167 @@ function SixSevenRoom() {
               <Trophy className="size-7" />
             </span>
             <h2 className="mt-4 font-display text-3xl font-black">
-              {tied ? "It's a tie!" : youWon ? "You win!" : youLost ? "You lose" : "Time's up"}
+              {soloMemory
+                ? "Run complete!"
+                : tied
+                  ? "It's a tie!"
+                  : youWon
+                    ? "You win!"
+                    : youLost
+                      ? "You lose"
+                      : "Time's up"}
             </h2>
             <p className="mt-1 font-mono text-muted-foreground">
-              {myScore} – {oppScore}
+              {soloMemory ? `Score ${myScore}` : `${myScore} – ${oppScore}`}
             </p>
+
+            {/* Cosmetic sponsor showcase — the winner's repped chain/product. */}
+            <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-[color-mix(in_oklab,var(--brand)_8%,transparent)]">
+              <div className="h-44 w-full">
+                <Collectible3DViewer
+                  art={sponsorArt(showcaseSponsor ?? handSponsors[1])}
+                  modelUrls={showcaseModels}
+                  modelScales={[...WINNER_SHOWCASE_MODEL_SCALES]}
+                  interactive
+                  hint={false}
+                  spin={1.2}
+                  className="!rounded-none bg-transparent aspect-auto h-full"
+                />
+              </div>
+              <div className="px-4 py-3">
+                <p className="text-sm font-semibold">
+                  {showcaseSponsor?.name || "Chainlink"}{" "}
+                  — {isChainBattle ? "Chain battle" : soloMemory ? "Solo run" : "Winner"} @ ETHGlobal NYC
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {proofStatus === "recording"
+                    ? `Capturing your proof clip… ${proofSecondsLeft}s`
+                    : proofStatus === "uploading"
+                      ? "Pinning your clip to IPFS…"
+                      : proofStatus === "minting"
+                        ? "Minting your proof-of-presence NFT…"
+                        : proofStatus === "done"
+                          ? proofNft?.crossChain
+                            ? "Cross-chain proof dispatched via Chainlink CCIP — minting on the destination chain."
+                            : "Your proof-of-presence NFT is minted."
+                          : proofStatus === "error"
+                            ? "Clip saved — mint a proof from your collection later."
+                            : "Your unique memory from The 67."}
+                </p>
+
+                {proofStatus === "done" && proofNft && (
+                  <div className="mt-3 space-y-2">
+                    {proofNft.animationUrl && (
+                      <video
+                        src={proofNft.animationUrl}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="h-28 w-full rounded-lg object-cover"
+                      />
+                    )}
+                    {proofNft.crossChain && proofNft.ccip ? (
+                      <a
+                        href={proofNft.ccip.explorerUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--brand)] hover:underline"
+                      >
+                        Track CCIP delivery
+                        <ArrowRight className="size-3.5" />
+                      </a>
+                    ) : (
+                      <a
+                        href={proofNft.blockExplorerUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--brand)] hover:underline"
+                      >
+                        View proof NFT #{proofNft.tokenId}
+                        <ArrowRight className="size-3.5" />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="mt-6 flex flex-col gap-3">
-              {youWon && (
-                <Link
-                  href="/claim"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:brightness-110"
-                >
-                  Collect your reward
-                  <ArrowRight className="size-4" />
-                </Link>
+              {/* Chain battle: winner claims the pot + soulbound badge via Privy. */}
+              {claimable && (
+                <div className="rounded-2xl border border-[color-mix(in_oklab,var(--brand)_40%,transparent)] bg-[color-mix(in_oklab,var(--brand)_8%,transparent)] p-4 text-left">
+                  <p className="text-sm font-semibold text-foreground">
+                    Chain battle reward
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Claim the USDC pot (settled on Base) plus a soulbound win
+                    badge on {winnerRewardChain?.label ?? "your chain"} —
+                    delivered to your wallet.
+                  </p>
+                  {claimStatus !== "done" ? (
+                    <Button
+                      variant="gradient"
+                      size="lg"
+                      className="mt-3 w-full"
+                      onClick={() => void claimReward()}
+                      disabled={claimStatus === "claiming"}
+                    >
+                      <Trophy className="size-4" />
+                      {claimStatus === "claiming"
+                        ? "Claiming…"
+                        : "Claim reward"}
+                    </Button>
+                  ) : (
+                    <div className="mt-3 space-y-1.5">
+                      {claimResult?.pot && (
+                        <a
+                          href={claimResult.pot.explorerUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-medium text-[var(--brand)] hover:underline"
+                        >
+                          Pot settled
+                          {claimResult.pot.amount
+                            ? ` · ${claimResult.pot.amount}`
+                            : ""}{" "}
+                          <ArrowRight className="size-3.5" />
+                        </a>
+                      )}
+                      {claimResult?.badge?.ccip ? (
+                        <a
+                          href={claimResult.badge.ccip.explorerUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-medium text-[var(--brand)] hover:underline"
+                        >
+                          Track badge via CCIP → {claimResult.badge.chainLabel}
+                          <ArrowRight className="size-3.5" />
+                        </a>
+                      ) : claimResult?.badge?.explorerUrl ? (
+                        <a
+                          href={claimResult.badge.explorerUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-medium text-[var(--brand)] hover:underline"
+                        >
+                          Win badge minted on {claimResult.badge.chainLabel}
+                          <ArrowRight className="size-3.5" />
+                        </a>
+                      ) : null}
+                      {claimResult?.badgeError && (
+                        <p className="text-xs text-[var(--destructive)]">
+                          {claimResult.badgeError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {claimStatus === "error" && claimResult?.error && (
+                    <p className="mt-2 text-xs text-[var(--destructive)]">
+                      {claimResult.error}
+                    </p>
+                  )}
+                </div>
               )}
               {role === "host" ? (
                 <Button variant="outline" size="lg" onClick={sendReset}>
@@ -887,7 +1554,7 @@ function SixSevenRoom() {
                 </p>
               )}
               <Link
-                href="/play/67"
+                href={eventSlug ? `/play/67?event=${eventSlug}` : "/play/67"}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
                 ← Back to lobby

@@ -252,6 +252,7 @@ export default function CollectibleScene({
   interactive = true,
   modelUrl,
   modelUrls,
+  modelScales,
   camera = false,
   modelScale = 1,
   spin = 0.25,
@@ -266,6 +267,9 @@ export default function CollectibleScene({
   modelUrl?: string;
   /** Render multiple models side by side (e.g. a paired camera reveal). */
   modelUrls?: string[];
+  /** Optional per-model size multipliers, index-aligned with `modelUrls`
+   *  (e.g. render one model smaller than its neighbour). Defaults to 1. */
+  modelScales?: number[];
   /** AR camera-feed mode: render smaller and stack the models vertically so
    *  they sit nicely over a portrait mobile viewport. */
   camera?: boolean;
@@ -322,13 +326,14 @@ export default function CollectibleScene({
               const position: [number, number, number] = camera
                 ? [0, -offset, 0]
                 : [offset, 0, 0];
+              const perModel = modelScales?.[i] ?? 1;
               return (
                 <GltfArtifact
                   key={`${url}-${i}`}
                   url={url}
                   reveal={reveal}
                   position={position}
-                  scaleMul={groupScaleMul * cameraMul}
+                  scaleMul={groupScaleMul * cameraMul * perModel}
                   spin={spin}
                 />
               );
