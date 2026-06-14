@@ -73,6 +73,28 @@ Requires `anvil` (Foundry) and a built arbiter artifact
 the arbiter logic, the report encoding, the payout. Simulated: the DON
 signature (we impersonate the forwarder) and the USDC deposits.
 
+## Production settlement (real funds) — `broadcast-settle.mjs`
+
+For settling a real finished pot on Base mainnet **before** the CRE workflow is
+live on a DON (the workflow does this automatically once deployed). It fetches
+the Lichess result, maps the winner to a wallet, and settles via
+`ChessArbiter.adminSettle` (if `CHESS_ARBITER_ADDRESS` is set) or
+`StakeEscrow.settle` directly.
+
+```bash
+# Dry-run (default): simulates the tx, sends nothing
+node broadcast-settle.mjs --game <gameId> --room <ROOMCODE> \
+  --white <addr> --black <addr>
+
+# Real transaction (needs MINTER_PRIVATE_KEY with OPERATOR_ROLE)
+node broadcast-settle.mjs --game <gameId> --room <ROOMCODE> \
+  --white <addr> --black <addr> --broadcast
+```
+
+It is **dry-run by default** and only broadcasts with `--broadcast`. It first
+simulates the call and aborts if it would revert — e.g. it will refuse when the
+room's stakes aren't credited on-chain (dev-mock staking credits no real USDC).
+
 ## Simulate with the CRE CLI (local-first)
 
 ```bash
