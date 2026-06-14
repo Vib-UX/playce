@@ -1,5 +1,10 @@
 import { WebSocketServer } from "ws";
 import { getStakeStatus } from "../src/lib/server/stake-registry.mjs";
+import {
+  recordOutcome,
+  recordHighScore,
+  recordBattleResult,
+} from "../src/lib/server/leaderboard-store.mjs";
 
 /**
  * Authoritative game server for "The 67".
@@ -37,6 +42,14 @@ function makeRoom(code) {
     timeLeft: ROUND_SECONDS,
     winner: null,
     timer: null,
+    roundId: 0,
+    // Battle type is defined by the host's repped sponsor ("chain" stakes a pot
+    // + rewards a badge; "memory" mints the proof clip only).
+    battleMode: "memory",
+    // Whether the in-progress round is solo (no online guest) -> high score.
+    solo: false,
+    winnerWallet: null,
+    winnerSponsorId: null,
   };
   rooms.set(code, room);
   return room;
@@ -66,6 +79,10 @@ function buildState(room) {
       guest: peerStatus(room.seats.guest),
     },
     stakes,
+    battleMode: room.battleMode,
+    solo: room.solo,
+    winnerWallet: room.winnerWallet,
+    winnerSponsorId: room.winnerSponsorId,
   };
 }
 
@@ -94,44 +111,110 @@ function decideWinner(scores) {
   return scores[0] > scores[1] ? 0 : 1;
 }
 
-function bothOnline(room) {
-  return (
-    room.seats.host?.status === "online" &&
-    room.seats.guest?.status === "online"
-  );
-}
-
-function bothStaked(room) {
+/**
+ * Every currently-online seat must be staked. Solo play needs only the host's
+ * stake; PvP needs both. Empty/reconnecting seats are not required to stake.
+ */
+function onlineSeatsStaked(room) {
   const stakes = getStakeStatus(room.code);
-  return stakes.host && stakes.guest;
+  if (room.seats.host?.status === "online" && !stakes.host) return false;
+  if (room.seats.guest?.status === "online" && !stakes.guest) return false;
+  return true;
 }
 
 function startGame(room) {
   if (room.status === "running") return;
-  if (!bothOnline(room)) return;
-  if (!bothStaked(room)) return;
+  // Only the host can start; they must be present. Solo is allowed — no guest
+  // required.
+  if (room.seats.host?.status !== "online") return;
+  // A round is "solo" when no guest is online. For chain battles we still treat
+  // it as a real match (the host "continues" against the house) so the stake +
+  // win badge / CCIP reward flow runs; only memory runs stay free practice.
+  const solo = room.seats.guest?.status !== "online";
+  // Chain battles always stake (solo or PvP). Memory runs are free to start.
+  const requiresStake = room.battleMode === "chain";
+  if (requiresStake && !onlineSeatsStaked(room)) return;
   clearTimer(room);
   room.scores = [0, 0];
   room.winner = null;
+  room.winnerWallet = null;
+  room.winnerSponsorId = null;
+  room.solo = solo;
   room.timeLeft = ROUND_SECONDS;
   room.status = "running";
+  room.roundId += 1;
   broadcast(room);
   room.timer = setInterval(() => {
     room.timeLeft -= 1;
     if (room.timeLeft <= 0) {
       room.timeLeft = 0;
       room.status = "finished";
-      room.winner = decideWinner(room.scores);
+      // Solo is a single-player high-score run — there is no opponent to tie
+      // with, so the host always "wins" their own run.
+      room.winner = room.solo ? 0 : decideWinner(room.scores);
+      const winnerSeat =
+        room.winner === 0
+          ? room.seats.host
+          : room.winner === 1
+            ? room.seats.guest
+            : null;
+      room.winnerWallet = winnerSeat?.wallet ?? null;
+      room.winnerSponsorId = winnerSeat?.sponsorId ?? null;
       clearTimer(room);
+      // Chain battles always record a claimable outcome (pot + win badge /
+      // CCIP), even when solo. Only memory solo runs are pure high scores.
+      if (room.solo && room.battleMode !== "chain") {
+        recordSoloOutcome(room);
+      } else {
+        recordBattleOutcome(room);
+      }
     }
     broadcast(room);
   }, 1000);
+}
+
+/** Record a solo run's score as a personal high score (no battle/chain win). */
+function recordSoloOutcome(room) {
+  const host = room.seats.host;
+  if (!host) return;
+  recordHighScore({
+    wallet: host.wallet ?? null,
+    sponsorId: host.sponsorId ?? null,
+    score: room.scores[0] ?? 0,
+  });
+}
+
+/** Push a finished PvP round into the shared leaderboard store. */
+function recordBattleOutcome(room) {
+  const seats = seatEntries(room)
+    .map(([, seat]) => seat)
+    .filter(Boolean)
+    .map((seat) => ({ wallet: seat.wallet ?? null, sponsorId: seat.sponsorId ?? null }));
+  recordOutcome({
+    winnerWallet: room.winnerWallet,
+    winnerSponsorId: room.winnerSponsorId,
+    players: seats,
+    roomCode: room.code,
+    battleKey: room.roundId,
+  });
+  // Authoritative per-room result for the reward-claim route (chain battles add
+  // a pot + win badge; the route verifies the winner against this).
+  recordBattleResult({
+    roomCode: room.code,
+    roundId: room.roundId,
+    winnerWallet: room.winnerWallet,
+    winnerSponsorId: room.winnerSponsorId,
+    battleMode: room.battleMode,
+  });
 }
 
 function resetGame(room) {
   clearTimer(room);
   room.scores = [0, 0];
   room.winner = null;
+  room.winnerWallet = null;
+  room.winnerSponsorId = null;
+  room.solo = false;
   room.timeLeft = ROUND_SECONDS;
   room.status = "waiting";
   broadcast(room);
@@ -235,6 +318,26 @@ export function attachSixSevenWss() {
           broadcast(room);
           break;
         }
+        case "identify": {
+          // Client reports its wallet + repped sponsor (+ derived battle mode)
+          // so finished rounds can be attributed on the leaderboard and the
+          // room can branch chain vs memory behavior. Not authoritative for
+          // gameplay scoring.
+          const seat = room.seats[seatRole];
+          if (seat) {
+            if (typeof msg.wallet === "string") seat.wallet = msg.wallet;
+            if (typeof msg.sponsorId === "string") seat.sponsorId = msg.sponsorId;
+            if (msg.battleMode === "chain" || msg.battleMode === "memory") {
+              seat.battleMode = msg.battleMode;
+            }
+          }
+          // The host defines the room's battle type.
+          if (seatRole === "host" && room.seats.host) {
+            room.battleMode = room.seats.host.battleMode ?? "memory";
+          }
+          broadcast(room);
+          break;
+        }
         default:
           break;
       }
@@ -262,6 +365,9 @@ export function attachSixSevenWss() {
  * @property {import("ws").WebSocket} ws
  * @property {PeerStatus} status
  * @property {ReturnType<typeof setTimeout>|null} graceTimer
+ * @property {string} [wallet]
+ * @property {string} [sponsorId]
+ * @property {"chain"|"memory"} [battleMode]
  *
  * @typedef {Object} Room
  * @property {string} code
@@ -271,4 +377,9 @@ export function attachSixSevenWss() {
  * @property {number} timeLeft
  * @property {number|null} winner
  * @property {ReturnType<typeof setInterval>|null} timer
+ * @property {number} roundId
+ * @property {"chain"|"memory"} battleMode
+ * @property {boolean} solo
+ * @property {string|null} winnerWallet
+ * @property {string|null} winnerSponsorId
  */

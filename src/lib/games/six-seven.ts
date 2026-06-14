@@ -23,6 +23,31 @@ export interface StakeStatus {
 /** Seconds in a 67 round (kept in sync with the server). */
 export const ROUND_SECONDS = 20;
 
+/** Auto proof-of-presence recording length (ms) once both players are in. */
+export const GAME_RECORD_MS = 15000;
+
+/** Off-chain event slug used for the auto-minted proof-of-presence NFT. */
+export const PROOF_EVENT_SLUG = "ethglobal-nyc";
+
+/** Cosmetic winner-showcase model shown in the finished overlay. */
+export const WINNER_SHOWCASE_MODEL = "/models/ethglobal-nyc.glb";
+
+/**
+ * Paired winner-showcase models shown side by side on every finished round:
+ * the Chainlink skin next to the ETHGlobal NYC artifact. The ETHGlobal model
+ * renders smaller (it's oversized natively), so its scale is dialed down.
+ */
+export const WINNER_SHOWCASE_MODELS = [
+  "/models/chainlink.glb",
+  "/models/ethglobal-nyc.glb",
+] as const;
+
+/** Per-model size multipliers, index-aligned with `WINNER_SHOWCASE_MODELS`. */
+export const WINNER_SHOWCASE_MODEL_SCALES = [1, 0.7] as const;
+
+/** Battle type for a room, derived from the host's repped sponsor. */
+export type BattleMode = "chain" | "memory";
+
 export interface ServerState {
   /** [host, guest] swap counts. */
   scores: [number, number];
@@ -32,12 +57,27 @@ export interface ServerState {
   winner: number | null;
   peers: { host: PeerStatus; guest: PeerStatus };
   stakes: StakeStatus;
+  /** Room battle type (host-defined). Drives staking + rewards vs proof-only. */
+  battleMode: BattleMode;
+  /** True when the finished/active round was solo (high score, no stake). */
+  solo: boolean;
+  /** Winning player's wallet (for the claim flow); null on tie / not finished. */
+  winnerWallet: string | null;
+  /** Sponsor/chain the winner repped (drives the reward chain). */
+  winnerSponsorId: string | null;
 }
 
 export type ClientMessage =
   | { type: "score" }
   | { type: "start" }
-  | { type: "reset" };
+  | { type: "reset" }
+  | { type: "stake-status" }
+  | {
+      type: "identify";
+      wallet?: string;
+      sponsorId?: string;
+      battleMode?: BattleMode;
+    };
 
 export type ServerMessage =
   | { type: "joined"; role: Role }
