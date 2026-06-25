@@ -6,6 +6,8 @@ import {
   verifyPrivyWalletOwnership,
   type SignerRequestBody,
 } from "@/lib/server/blink-signer";
+import { getRoomStakeAmount } from "@/lib/server/chess-store.mjs";
+import { STAKE_AMOUNT } from "@/lib/blink/config";
 
 export const runtime = "nodejs";
 
@@ -35,7 +37,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const validationErrors = validateSignerRequest(body, STAKE_ESCROW_ADDRESS);
+  // The agreed stake is the chess room's configured amount, or the fixed
+  // default for rooms without a chess match (e.g. the 67 stake rails).
+  const rawRoomCode =
+    typeof body.metadata?.roomCode === "string" ? body.metadata.roomCode : "";
+  const expectedAmount =
+    getRoomStakeAmount(rawRoomCode.toUpperCase()) ?? STAKE_AMOUNT;
+
+  const validationErrors = validateSignerRequest(
+    body,
+    STAKE_ESCROW_ADDRESS,
+    expectedAmount,
+  );
   if (validationErrors.length > 0) {
     return NextResponse.json({ error: validationErrors.join(" ") }, { status: 400 });
   }

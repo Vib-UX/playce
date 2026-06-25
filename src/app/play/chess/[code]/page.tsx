@@ -22,8 +22,17 @@ import { useStakeDeposit } from "@/lib/blink/use-stake-deposit";
 import {
   BLINK_DEV_MOCK_STAKE,
   BLINK_STAKING_ENABLED,
-  STAKE_AMOUNT,
 } from "@/lib/blink/config";
+import {
+  getTimeControl,
+  normalizeGameType,
+  clampStakeAmount,
+  formatStake,
+  formatClock,
+  DEFAULT_TIME_CONTROL_KEY,
+  DEFAULT_STAKE_AMOUNT,
+  type ChessGameType,
+} from "@/lib/games/chess-options";
 import { ACTIVE_CHAIN } from "@/lib/chain";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +49,12 @@ interface ChessMatchView {
   url: string | null;
   urlWhite: string | null;
   urlBlack: string | null;
+  gameType: ChessGameType;
+  timeControlKey: string | null;
+  timeLabel: string | null;
+  clockLimit: number;
+  clockIncrement: number;
+  stakeAmount: number;
   status: "lobby" | "live" | "finished";
   winnerColor: "white" | "black" | null;
   winnerWallet: string | null;
@@ -84,6 +99,13 @@ function ChessRoom() {
   const role = (searchParams.get("role") === "guest" ? "guest" : "host") as Role;
   const repSponsorId = searchParams.get("rep") ?? undefined;
   const eventSlug = searchParams.get("event") ?? undefined;
+
+  // Host-chosen options from the lobby URL (guests inherit them from the match).
+  const desiredGameType = normalizeGameType(searchParams.get("game"));
+  const desiredTimeControlKey = searchParams.get("tc") ?? DEFAULT_TIME_CONTROL_KEY;
+  const desiredStake = searchParams.get("stake")
+    ? clampStakeAmount(Number(searchParams.get("stake")))
+    : DEFAULT_STAKE_AMOUNT;
 
   const { email, wallet, getAccessToken, mode, authenticated } = usePlaycesAuth();
   const {
@@ -171,6 +193,9 @@ function ChessRoom() {
           address: playerAddress,
           role,
           sponsorId: role === "host" ? repSponsorId : undefined,
+          gameType: role === "host" ? desiredGameType : undefined,
+          timeControlKey: role === "host" ? desiredTimeControlKey : undefined,
+          stakeAmount: role === "host" ? desiredStake : undefined,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as {
@@ -195,7 +220,17 @@ function ChessRoom() {
     } finally {
       registeringRef.current = false;
     }
-  }, [authenticated, playerAddress, code, role, repSponsorId, getAccessToken]);
+  }, [
+    authenticated,
+    playerAddress,
+    code,
+    role,
+    repSponsorId,
+    desiredGameType,
+    desiredTimeControlKey,
+    desiredStake,
+    getAccessToken,
+  ]);
 
   // Poll: register (with retry for a waiting guest), then refresh status. This
   // is the fallback; the WS relay below delivers faster live updates.
@@ -262,6 +297,21 @@ function ChessRoom() {
   }, [code]);
 
   // ── Derived ───────────────────────────────────────────────────────────
+  // The match is authoritative once loaded; before that, fall back to the
+  // host's URL choices (or sane defaults for a guest opening a fresh link).
+  const roomStake =
+    match?.stakeAmount ?? (role === "host" ? desiredStake : DEFAULT_STAKE_AMOUNT);
+  const roomGameType: ChessGameType =
+    match?.gameType ?? (role === "host" ? desiredGameType : "friendly");
+  const roomTimeControl = getTimeControl(
+    match?.timeControlKey ?? (role === "host" ? desiredTimeControlKey : undefined),
+  );
+  const roomTimeLabel =
+    match?.timeLabel ??
+    (match
+      ? formatClock(match.clockLimit, match.clockIncrement)
+      : roomTimeControl.label);
+
   const myColor: "white" | "black" = role === "host" ? "white" : "black";
   const myBoardUrl = role === "host" ? match?.urlWhite : match?.urlBlack;
   const myStaked = role === "host" ? stakes.host : stakes.guest;
@@ -292,7 +342,7 @@ function ChessRoom() {
       if (BLINK_DEV_MOCK_STAKE) {
         transferId = `dev-mock-${role}-${code}`;
       } else {
-        const depositResult = await stake({ amount: STAKE_AMOUNT, roomCode: code, role });
+        const depositResult = await stake({ amount: roomStake, roomCode: code, role });
         transferId = depositResult.transfer?.id;
         if (!transferId) {
           setStakeMessage("Deposit completed but no transfer id was returned.");
@@ -312,7 +362,7 @@ function ChessRoom() {
           roomCode: code,
           role,
           playerAddress: stakePlayerAddress ?? wallet,
-          amount: STAKE_AMOUNT,
+          amount: roomStake,
           transferId,
         }),
       });
@@ -392,15 +442,23 @@ function ChessRoom() {
         <div className="flex items-center gap-2 text-xs">
           <span className="rounded-full border border-border bg-card px-3 py-1.5 uppercase tracking-widest text-muted-foreground">
             Room <span className="font-mono text-foreground">{code}</span>
-            <span className="text-[var(--brand)]"> · {myColor}</span>
+            <span className="text-[var(--brand)]"> {myColor}</span>
           </span>
         </div>
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <Badge variant="brand">
-          <Crown className="size-3" /> Chess Blitz
+          <Crown className="size-3" /> Chess {roomTimeLabel}
         </Badge>
+        <Badge variant="outline" className="gap-1 capitalize">
+          {roomGameType}
+        </Badge>
+        {stakeGateActive && (
+          <Badge variant="outline" className="gap-1">
+            {formatStake(roomStake)} stake
+          </Badge>
+        )}
         {sponsor && (
           <Badge variant="outline" className="gap-1">
             <span className="size-2 rounded-full" style={{ backgroundColor: sponsor.brandColor }} />
@@ -443,7 +501,7 @@ function ChessRoom() {
               <p className="text-xs text-muted-foreground">
                 {BLINK_DEV_MOCK_STAKE
                   ? "Dev/test mode: tap to mark yourself staked — no real USDC moves."
-                  : `Both players stake ${STAKE_AMOUNT} USDC via Blink on ${ACTIVE_CHAIN.name} before playing.`}
+                  : `Both players stake ${formatStake(roomStake)} USDC via Blink on ${ACTIVE_CHAIN.name} before playing.`}
               </p>
             </div>
           </div>
@@ -472,9 +530,9 @@ function ChessRoom() {
             >
               {stakeStatus === "signer-loading" || stakeActive || stakeConfirming
                 ? "Preparing…"
-                : BLINK_DEV_MOCK_STAKE
-                  ? `Stake $${STAKE_AMOUNT} (dev mock)`
-                  : `Stake $${STAKE_AMOUNT} USDC`}
+                  : BLINK_DEV_MOCK_STAKE
+                  ? `Stake ${formatStake(roomStake)} (dev mock)`
+                  : `Stake ${formatStake(roomStake)} USDC`}
             </Button>
           )}
 

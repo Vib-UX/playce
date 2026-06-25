@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { isAddress } from "viem";
-import { STAKE_AMOUNT } from "@/lib/blink/config";
+import { STAKE_AMOUNT, isValidStakeAmount } from "@/lib/blink/config";
 import { verifyPrivyWalletOwnership } from "@/lib/server/blink-signer";
 import { creditStakeOnchain } from "@/lib/server/stake-escrow";
 import { recordStake } from "@/lib/server/stake-registry.mjs";
+import { getRoomStakeAmount } from "@/lib/server/chess-store.mjs";
 
 export const runtime = "nodejs";
 
@@ -35,9 +36,14 @@ export async function POST(req: Request) {
   if (!isAddress(playerAddress)) {
     return NextResponse.json({ error: "Invalid playerAddress." }, { status: 400 });
   }
-  if (!Number.isFinite(amount) || amount !== STAKE_AMOUNT) {
+  const expectedAmount =
+    getRoomStakeAmount(roomCode.toUpperCase()) ?? STAKE_AMOUNT;
+  if (
+    !isValidStakeAmount(amount) ||
+    Math.abs(amount - expectedAmount) > 1e-9
+  ) {
     return NextResponse.json(
-      { error: `amount must be exactly ${STAKE_AMOUNT} USDC.` },
+      { error: `amount must be exactly ${expectedAmount} USDC for this room.` },
       { status: 400 },
     );
   }

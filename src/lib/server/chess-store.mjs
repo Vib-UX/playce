@@ -31,6 +31,12 @@ const REDIS_KEY = "playces:chess:matches";
  * @property {string|null} url              Public game URL.
  * @property {string|null} urlWhite         Host board link.
  * @property {string|null} urlBlack         Guest board link.
+ * @property {"friendly"|"rated"} gameType  Host-chosen game type.
+ * @property {string|null} timeControlKey   Time-control preset key (e.g. "blitz_5_0").
+ * @property {string|null} timeLabel        Human time-control label (e.g. "Blitz 5+0").
+ * @property {number} clockLimit            Total clock per side, seconds.
+ * @property {number} clockIncrement        Clock increment per move, seconds.
+ * @property {number} stakeAmount           Per-player stake, USDC (both seats match).
  * @property {"lobby"|"live"|"finished"} status
  * @property {"white"|"black"|null} winnerColor
  * @property {string|null} winnerWallet
@@ -88,6 +94,12 @@ function blankMatch(roomCode) {
     url: null,
     urlWhite: null,
     urlBlack: null,
+    gameType: "friendly",
+    timeControlKey: null,
+    timeLabel: null,
+    clockLimit: 300,
+    clockIncrement: 0,
+    stakeAmount: 0.25,
     status: "lobby",
     winnerColor: null,
     winnerWallet: null,
@@ -103,6 +115,19 @@ function blankMatch(roomCode) {
 /** Get a match by room code (or null). */
 export function getMatch(roomCode) {
   return matches.get(roomKey(roomCode)) ?? null;
+}
+
+/**
+ * The per-player stake amount agreed for a chess room, or null when there's no
+ * chess match for this code (e.g. a 67 room sharing the stake rails). Callers
+ * fall back to the default fixed stake when this is null.
+ * @param {string} roomCode
+ * @returns {number | null}
+ */
+export function getRoomStakeAmount(roomCode) {
+  const m = matches.get(roomKey(roomCode));
+  if (!m) return null;
+  return typeof m.stakeAmount === "number" ? m.stakeAmount : null;
 }
 
 /**

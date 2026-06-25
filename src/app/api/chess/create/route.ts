@@ -4,6 +4,12 @@ import { verifyPrivyWalletOwnership } from "@/lib/server/blink-signer";
 import { createOpenChallenge } from "@/lib/server/lichess";
 import { getSponsorById } from "@/lib/mock/sponsors";
 import {
+  getTimeControl,
+  normalizeGameType,
+  clampStakeAmount,
+  DEFAULT_STAKE_AMOUNT,
+} from "@/lib/games/chess-options";
+import {
   getMatch,
   upsertMatch,
   markMatchOpened,
@@ -21,8 +27,10 @@ interface CreateBody {
   address?: string;
   role?: "host" | "guest";
   sponsorId?: string;
-  clockLimit?: number;
-  clockIncrement?: number;
+  /** Host-chosen match options (ignored for guests — they inherit the room). */
+  gameType?: "friendly" | "rated";
+  timeControlKey?: string;
+  stakeAmount?: number;
 }
 
 /**
@@ -73,6 +81,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unknown sponsor." }, { status: 400 });
     }
 
+    // Resolve host-chosen options. Once a room exists its settings are locked
+    // so a host refresh can't silently change the stake/time the guest agreed to.
+    const tc = getTimeControl(body.timeControlKey ?? existing?.timeControlKey);
+    const gameType = existing?.gameId
+      ? normalizeGameType(existing.gameType)
+      : normalizeGameType(body.gameType);
+    const stakeAmount = existing?.gameId
+      ? (existing.stakeAmount ?? DEFAULT_STAKE_AMOUNT)
+      : clampStakeAmount(body.stakeAmount ?? DEFAULT_STAKE_AMOUNT);
+
     // Reuse an already-created challenge so a refresh doesn't spawn duplicates.
     let challenge = existing?.gameId
       ? {
@@ -86,8 +104,9 @@ export async function POST(req: Request) {
     if (!challenge) {
       try {
         challenge = await createOpenChallenge({
-          clockLimit: body.clockLimit,
-          clockIncrement: body.clockIncrement,
+          clockLimit: tc.clockLimit,
+          clockIncrement: tc.clockIncrement,
+          rated: gameType === "rated",
           name: `Playces Chess · ${roomCode}`,
         });
       } catch (err) {
@@ -103,6 +122,12 @@ export async function POST(req: Request) {
       url: challenge.url,
       urlWhite: challenge.urlWhite,
       urlBlack: challenge.urlBlack,
+      gameType,
+      timeControlKey: tc.key,
+      timeLabel: tc.label,
+      clockLimit: tc.clockLimit,
+      clockIncrement: tc.clockIncrement,
+      stakeAmount,
     });
   } else {
     // Guest join — the host must have opened the room first.

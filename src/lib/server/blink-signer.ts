@@ -5,7 +5,11 @@
 import { createSign, randomUUID } from "node:crypto";
 import { isAddress } from "viem";
 import { ACTIVE_CHAIN, ACTIVE_USDC } from "@/lib/chain";
-import { STAKE_AMOUNT } from "@/lib/blink/config";
+import {
+  MIN_STAKE_AMOUNT,
+  MAX_STAKE_AMOUNT,
+  isValidStakeAmount,
+} from "@/lib/blink/config";
 
 export const BLINK_CHAIN_ID = ACTIVE_CHAIN.id;
 export const BLINK_USDC = ACTIVE_USDC;
@@ -42,6 +46,7 @@ export function signPayload(payload: string, privateKeyPem: string): string {
 export function validateSignerRequest(
   body: SignerRequestBody,
   escrowAddress: string,
+  expectedAmount?: number,
 ): string[] {
   const errors: string[] = [];
   const { amount, chainId, address, token, callbackScheme } = body;
@@ -49,8 +54,18 @@ export function validateSignerRequest(
   if (!Number.isFinite(amount) || amount <= 0) {
     errors.push("amount must be a positive number.");
   }
-  if (amount !== STAKE_AMOUNT) {
-    errors.push(`amount must be exactly ${STAKE_AMOUNT} USDC.`);
+  if (!isValidStakeAmount(amount)) {
+    errors.push(
+      `amount must be between ${MIN_STAKE_AMOUNT} and ${MAX_STAKE_AMOUNT} USDC.`,
+    );
+  }
+  // When the room's agreed stake is known, enforce it exactly so both seats
+  // deposit the same amount the host configured.
+  if (
+    typeof expectedAmount === "number" &&
+    Math.abs(amount - expectedAmount) > 1e-9
+  ) {
+    errors.push(`amount must be exactly ${expectedAmount} USDC for this room.`);
   }
   if (!Number.isInteger(chainId) || chainId <= 0) {
     errors.push("chainId must be a positive integer.");

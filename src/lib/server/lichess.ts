@@ -39,6 +39,11 @@ export interface ChallengeOptions {
   variant?: string;
   /** Label shown on the Lichess board. */
   name?: string;
+  /**
+   * Create a rated game (default false). Note: Lichess only rates games between
+   * two logged-in accounts, so anonymous open challenges fall back to casual.
+   */
+  rated?: boolean;
 }
 
 /** Lichess game lifecycle, normalized for the app + CRE settlement. */
@@ -71,7 +76,8 @@ export async function createOpenChallenge(
     clockLimit = 300,
     clockIncrement = 0,
     variant = "standard",
-    name = "Playces Chess Blitz",
+    name = "Playces Chess",
+    rated = false,
   } = opts;
 
   const body = new URLSearchParams({
@@ -79,7 +85,7 @@ export async function createOpenChallenge(
     "clock.increment": String(clockIncrement),
     variant,
     name,
-    rated: "false",
+    rated: rated ? "true" : "false",
   });
 
   const res = await fetch(`${LICHESS_BASE}/api/challenge/open`, {
