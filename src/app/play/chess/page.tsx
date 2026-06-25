@@ -4,7 +4,7 @@ import { getGameBySlug } from "@/lib/mock/games";
 import { ChessLobby } from "./chess-lobby";
 
 export const metadata: Metadata = {
-  title: "Chess Blitz",
+  title: "Chess",
   description:
     "Speed chess on Lichess, staked head-to-head and settled trustlessly by a Chainlink CRE workflow.",
 };
