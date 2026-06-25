@@ -7,11 +7,11 @@ import {ERC721URIStorage} from
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
- * @title PlaycePass
- * @notice Soulbound check-in / reward NFTs for Playce venues.
+ * @title PlaycesPass
+ * @notice Soulbound check-in / reward NFTs for Playces venues.
  *
  * Eligibility (geofencing, identity verification, game results) is checked
- * off-chain by Playce's backend. After a successful verification the backend —
+ * off-chain by Playces's backend. After a successful verification the backend —
  * holding MINTER_ROLE — mints a pass directly to the attendee's wallet, so
  * collecting is gasless for the user.
  *
@@ -20,7 +20,7 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
  *  - Each token stores its eventId and a metadata URI.
  *  - Tokens are soulbound (non-transferable) — a pass is proof *you* were there.
  */
-contract PlaycePass is ERC721URIStorage, AccessControl {
+contract PlaycesPass is ERC721URIStorage, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     uint256 private _nextTokenId = 1;
@@ -44,7 +44,7 @@ contract PlaycePass is ERC721URIStorage, AccessControl {
     error ZeroAddress();
 
     constructor(address admin, address minter)
-        ERC721("Playce Moment", "PLAYCE")
+        ERC721("Playces Moment", "PLAYCES")
     {
         if (admin == address(0) || minter == address(0)) revert ZeroAddress();
         _grantRole(DEFAULT_ADMIN_ROLE, admin);

@@ -1,10 +1,10 @@
 "use client";
 
-import type { PlayceEvent, Claim, MintStatus, PinnedImage } from "@/lib/types";
+import type { PlaycesEvent, Claim, MintStatus, PinnedImage } from "@/lib/types";
 import { sleep } from "@/lib/utils";
 
 interface ClaimArgs {
-  event: PlayceEvent;
+  event: PlaycesEvent;
   wallet: string;
   email?: string;
   coords?: { lat: number; lng: number };

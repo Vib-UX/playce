@@ -4,14 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, ArrowRight } from "lucide-react";
-import type { PlayceEvent } from "@/lib/types";
+import type { PlaycesEvent } from "@/lib/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDateRange } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
-export function EventHero({ event }: { event: PlayceEvent }) {
+export function EventHero({ event }: { event: PlaycesEvent }) {
   return (
     <section className="relative overflow-hidden">
       <div

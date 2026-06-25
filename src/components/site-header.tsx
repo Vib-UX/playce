@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePlayceAuth } from "@/lib/auth/context";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccountChip } from "@/components/account-chip";
 import { PrivyAuthButton } from "@/components/privy-auth-button";
@@ -11,8 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/#events", label: "Events" },
-  { href: "/play/pvp", label: "PvP" },
+  { href: "/events", label: "Events" },
+  { href: "/play", label: "Play" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/claim", label: "Check in" },
   { href: "/profile", label: "Rewards" },
@@ -20,7 +20,7 @@ const NAV = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { ready, authenticated } = usePlayceAuth();
+  const { ready, authenticated } = usePlaycesAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 glass">

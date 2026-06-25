@@ -146,7 +146,7 @@ export async function POST(req: Request) {
     try {
       const pinned = await pinJSON(
         {
-          name: `Playce Win Badge — ${sponsor?.name ?? "Chain"} @ ETHGlobal NYC`,
+          name: `Playces Win Badge — ${sponsor?.name ?? "Chain"} @ ETHGlobal NYC`,
           description:
             "Soulbound proof of a chain-battle win in The 67 at ETHGlobal NYC.",
           image: "/models/chainlink.glb",
@@ -159,7 +159,7 @@ export async function POST(req: Request) {
             { trait_type: "Room", value: roomCode },
           ],
         },
-        `playce-winbadge-${roomCode}-${roundId}.json`,
+        `playces-winbadge-${roomCode}-${roundId}.json`,
       );
       tokenURI = pinned.ipfsUri;
     } catch (err) {

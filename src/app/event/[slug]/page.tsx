@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Gift, Lock, Swords, Users } from "lucide-react";
-import { getEventBySlug, EVENTS } from "@/lib/mock/events";
+import { getEventBySlugAny } from "@/lib/events-service";
 import {
   getSponsorsByIds,
   getSponsorById,
@@ -16,13 +16,12 @@ import { VenueMap } from "@/components/venue-map";
 import { StatsStrip } from "@/components/stats-strip";
 import { ClaimPanel } from "@/components/claim-panel";
 import { EnsTicketCard } from "@/components/ens-ticket-card";
+import { EventRsvpButton } from "@/components/event-rsvp-button";
 import { SponsorChip } from "@/components/sponsor-chip";
 import { LeaderboardBoard } from "@/components/leaderboard-board";
 import { Badge } from "@/components/ui/badge";
 
-export function generateStaticParams() {
-  return EVENTS.map((e) => ({ slug: e.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -30,8 +29,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const event = getEventBySlug(slug);
-  if (!event) return { title: "Venue not found" };
+  const event = await getEventBySlugAny(slug);
+  if (!event) return { title: "Event not found" };
   return {
     title: event.title,
     description: event.tagline,
@@ -44,8 +43,11 @@ export default async function EventPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const event = getEventBySlug(slug);
+  const event = await getEventBySlugAny(slug);
   if (!event) notFound();
+
+  const isUserEvent = event.source === "user";
+  const isOnline = !event.venue.center.lat && !event.venue.center.lng;
 
   const sponsors = getSponsorsByIds(event.sponsorIds);
   const sponsorGroups = groupSponsorsByCategory(sponsors);
@@ -100,7 +102,9 @@ export default async function EventPage({
               <section>
                 <h2 className="font-display text-xl font-semibold">Games</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Play head-to-head — you have to be at the venue.
+                  {isOnline
+                    ? "Play head-to-head online — jump in from anywhere."
+                    : "Play head-to-head — you have to be at the venue."}
                 </p>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {games.map((game) => {
@@ -149,7 +153,7 @@ export default async function EventPage({
                       <Link
                         key={game.id}
                         href={
-                          live
+                          live && event.source === "mock"
                             ? `/play/${game.slug}?event=${event.slug}`
                             : `/play/${game.slug}`
                         }
@@ -245,38 +249,50 @@ export default async function EventPage({
               </section>
             )}
 
-            <section>
-              <h2 className="font-display text-xl font-semibold">Schedule</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {event.timezone.replace("_", " ")}
-              </p>
-              <div className="mt-5">
-                <EventSchedule event={event} />
-              </div>
-            </section>
+            {event.schedule.length > 0 && (
+              <section>
+                <h2 className="font-display text-xl font-semibold">Schedule</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {event.timezone.replace("_", " ")}
+                </p>
+                <div className="mt-5">
+                  <EventSchedule event={event} />
+                </div>
+              </section>
+            )}
 
-            <section>
-              <h2 className="font-display text-xl font-semibold">Speakers</h2>
-              <div className="mt-4">
-                <EventSpeakers event={event} />
-              </div>
-            </section>
+            {event.speakers.length > 0 && (
+              <section>
+                <h2 className="font-display text-xl font-semibold">Speakers</h2>
+                <div className="mt-4">
+                  <EventSpeakers event={event} />
+                </div>
+              </section>
+            )}
 
-            <section>
-              <h2 className="font-display text-xl font-semibold">Venue</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Check-ins and games are geofenced to this location.
-              </p>
-              <div className="mt-4">
-                <VenueMap venue={event.venue} />
-              </div>
-            </section>
+            {!isOnline && (
+              <section>
+                <h2 className="font-display text-xl font-semibold">Venue</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Check-ins and games are geofenced to this location.
+                </p>
+                <div className="mt-4">
+                  <VenueMap venue={event.venue} />
+                </div>
+              </section>
+            )}
           </div>
 
-          {/* Sticky check-in rail */}
+          {/* Sticky rail */}
           <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
-            <ClaimPanel event={event} />
-            <EnsTicketCard event={event} />
+            {isUserEvent ? (
+              <EventRsvpButton slug={event.slug} initialCount={event.rsvpCount} />
+            ) : (
+              <>
+                <ClaimPanel event={event} />
+                <EnsTicketCard event={event} />
+              </>
+            )}
             <StatsStrip event={event} />
             <div className="rounded-2xl border border-border bg-card p-5">
               <h3 className="font-display font-semibold">Hosts</h3>

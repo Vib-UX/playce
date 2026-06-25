@@ -22,14 +22,15 @@ const display = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://playces.fun"),
   title: {
-    default: "Playce — Show up. Play. Earn.",
-    template: "%s · Playce",
+    default: "Playces — Show up. Play. Earn.",
+    template: "%s · Playces",
   },
   description:
-    "Playce turns real-world venues into interactive social arenas. Check in, play mini-games, rep your favorite chains, unlock airdrops, and collect onchain rewards.",
+    "Playces turns real-world venues into interactive social arenas. Check in, play mini-games, rep your favorite chains, unlock airdrops, and collect onchain rewards.",
   keywords: [
-    "Playce",
+    "Playces",
     "events",
     "check-in",
     "mini-games",
@@ -39,15 +40,32 @@ export const metadata: Metadata = {
     "embedded wallet",
   ],
   openGraph: {
-    title: "Playce — Show up. Play. Earn.",
+    title: "Playces — Show up. Play. Earn.",
     description:
       "Check in at venues, play onchain mini-games like the 67, rep your chain, and earn rewards + airdrops.",
     type: "website",
+    siteName: "Playces",
+    url: "https://playces.fun",
+    images: [
+      {
+        url: "/cover.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Playces — turn venues into onchain arenas.",
+      },
+    ],
   },
-  applicationName: "Playce",
+  twitter: {
+    card: "summary_large_image",
+    title: "Playces — Show up. Play. Earn.",
+    description:
+      "Check in at venues, play onchain mini-games like the 67, rep your chain, and earn rewards + airdrops.",
+    images: ["/cover.jpg"],
+  },
+  applicationName: "Playces",
   appleWebApp: {
     capable: true,
-    title: "Playce",
+    title: "Playces",
     statusBarStyle: "black-translucent",
   },
 };

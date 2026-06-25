@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy, LogOut, User, Wallet, Check, ChevronDown } from "lucide-react";
-import { usePlayceAuth } from "@/lib/auth/context";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { Avatar } from "@/components/ui/avatar";
 import { shortenAddress } from "@/lib/utils";
 import { explorerAddressUrl } from "@/lib/chain";
 
 export function AccountChip() {
-  const { email, wallet, logout, embedded } = usePlayceAuth();
+  const { email, wallet, logout, embedded } = usePlaycesAuth();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

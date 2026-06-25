@@ -7,7 +7,7 @@ import { ArrowRight, Crown, Hand, LogIn, Plus, Trophy, Users } from "lucide-reac
 import { getGameById } from "@/lib/mock/games";
 import { getSponsorsByIds } from "@/lib/mock/sponsors";
 import { rewardChainForSponsorId } from "@/lib/battle";
-import { usePlayceAuth } from "@/lib/auth/context";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { generateRoomCode } from "@/lib/games/six-seven";
 import { ACTIVE_CHAIN } from "@/lib/chain";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ function ChessLobbyInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const eventSlug = searchParams.get("event") ?? "";
-  const { authenticated, ready, login, email } = usePlayceAuth();
+  const { authenticated, ready, login, email } = usePlaycesAuth();
 
   const sponsorOptions = useMemo(
     () => getSponsorsByIds(GAME?.sponsorIds ?? ["arbitrum", "ethereum", "base"]),
@@ -221,7 +221,7 @@ function ChessLobbyInner() {
 
           <p className="text-center text-xs text-muted-foreground">
             <Link href="/" className="hover:text-foreground">
-              ← Back to Playce
+              ← Back to Playces
             </Link>
           </p>
         </div>

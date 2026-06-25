@@ -11,9 +11,9 @@ import {Client} from
 
 /**
  * @title ProofSender
- * @notice Source-chain sender for Playce's cross-chain proof-of-presence.
+ * @notice Source-chain sender for Playces's cross-chain proof-of-presence.
  *
- * When a "chain battle" (The 67) finishes, Playce's backend (holding
+ * When a "chain battle" (The 67) finishes, Playces's backend (holding
  * SENDER_ROLE) calls {sendProof}. This builds a Chainlink CCIP message carrying
  * the winner, an event id, and a metadata URI, pays the CCIP fee in LINK, and
  * dispatches it to the {ProofReceiverPass} on the destination chain, which mints

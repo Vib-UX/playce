@@ -43,7 +43,7 @@ export function roleToUint8(role: "host" | "guest"): 0 | 1 {
   return role === "host" ? 0 : 1;
 }
 
-/** USDC has 6 decimals on EVM chains used by Playce. */
+/** USDC has 6 decimals on EVM chains used by Playces. */
 export function usdToUsdcUnits(amount: number): bigint {
   return BigInt(Math.round(amount * 1_000_000));
 }

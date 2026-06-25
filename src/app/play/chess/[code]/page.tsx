@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { getSponsorById } from "@/lib/mock/sponsors";
 import { rewardChainForSponsorId } from "@/lib/battle";
-import { usePlayceAuth, PRIVY_ENABLED } from "@/lib/auth/context";
+import { usePlaycesAuth, PRIVY_ENABLED } from "@/lib/auth/context";
 import { useStakeDeposit } from "@/lib/blink/use-stake-deposit";
 import {
   BLINK_DEV_MOCK_STAKE,
@@ -85,7 +85,7 @@ function ChessRoom() {
   const repSponsorId = searchParams.get("rep") ?? undefined;
   const eventSlug = searchParams.get("event") ?? undefined;
 
-  const { email, wallet, getAccessToken, mode, authenticated } = usePlayceAuth();
+  const { email, wallet, getAccessToken, mode, authenticated } = usePlaycesAuth();
   const {
     stake,
     canStake,

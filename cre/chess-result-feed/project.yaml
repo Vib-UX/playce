@@ -2,7 +2,7 @@
 #
 # RPC endpoints are required so the workflow can read `pendingMatches()` and
 # submit signed reports (writeReport) to the ChessArbiter. The arbiter lives on
-# Playce's active settlement chain (Base mainnet by default; Base Sepolia for
+# Playces's active settlement chain (Base mainnet by default; Base Sepolia for
 # testing) — keep `config.json:chainSelector` in sync with the chain you use
 # here.
 #

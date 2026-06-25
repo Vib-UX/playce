@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verify all Playce production contracts on Sourcify (no API key required).
+# Verify all Playces production contracts on Sourcify (no API key required).
 # When ETHERSCAN_API_KEY is set, also submits to Etherscan / Basescan / Arbiscan
 # (single Etherscan API v2 key works across chains).
 #
@@ -10,7 +10,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ENV_FILE="$ROOT/.env.local"
-DEPLOYER="${PLAYCE_DEPLOYER:-0x88cb5e1fAee0798E2780618CF4fD12933E385426}"
+DEPLOYER="${PLAYCES_DEPLOYER:-0x88cb5e1fAee0798E2780618CF4fD12933E385426}"
 
 if [ -f "$ENV_FILE" ]; then
   # shellcheck disable=SC1090
@@ -65,9 +65,9 @@ verify_one() {
 
 verify_one base \
   0xC1eF7A81195538bc529b8Ed42182eC73764450FC \
-  src/PlaycePass.sol:PlaycePass \
+  src/PlaycesPass.sol:PlaycesPass \
   "$PASS_ARGS" \
-  "PlaycePass — memory proof mint (Base mainnet)"
+  "PlaycesPass — memory proof mint (Base mainnet)"
 
 verify_one base \
   0x01D514432b6694D8260bbA0fc2af3Cf327020823 \
@@ -83,9 +83,9 @@ verify_one arbitrum-sepolia \
 
 verify_one arbitrum-sepolia \
   0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904 \
-  src/PlaycePass.sol:PlaycePass \
+  src/PlaycesPass.sol:PlaycesPass \
   "$PASS_ARGS" \
-  "PlaycePass — Arbitrum win badge direct mint (Arbitrum Sepolia)"
+  "PlaycesPass — Arbitrum win badge direct mint (Arbitrum Sepolia)"
 
 verify_one sepolia \
   0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904 \

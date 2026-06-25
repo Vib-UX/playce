@@ -88,7 +88,7 @@ export async function POST(req: Request) {
         challenge = await createOpenChallenge({
           clockLimit: body.clockLimit,
           clockIncrement: body.clockIncrement,
-          name: `Playce Chess · ${roomCode}`,
+          name: `Playces Chess · ${roomCode}`,
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : "Lichess challenge failed.";

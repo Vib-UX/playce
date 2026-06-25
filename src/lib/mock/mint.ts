@@ -1,4 +1,4 @@
-import type { PlayceEvent, Claim, NFTMetadata } from "@/lib/types";
+import type { PlaycesEvent, Claim, NFTMetadata } from "@/lib/types";
 import { explorerTxUrl, ACTIVE_CHAIN } from "@/lib/chain";
 import { sleep } from "@/lib/utils";
 
@@ -30,15 +30,15 @@ export type MintProgressHandler = (
  * success) are already wired. Replace the body with an actual contract call:
  *
  *   const hash = await walletClient.writeContract({
- *     address: PLAYCE_CONTRACT_ADDRESS,
- *     abi: playceAbi,
+ *     address: PLAYCES_CONTRACT_ADDRESS,
+ *     abi: playcesAbi,
  *     functionName: "mintClaim",
  *     args: [to, eventId, metadataURI],
  *   });
  *   await publicClient.waitForTransactionReceipt({ hash });
  */
 export async function mintReward(
-  event: PlayceEvent,
+  event: PlaycesEvent,
   wallet: string,
   email: string | undefined,
   onProgress?: MintProgressHandler,

@@ -92,7 +92,7 @@ export async function prepareNativeMetaMaskForBlink(
 
   if (!active || active !== expected) {
     throw new Error(
-      `In MetaMask, switch to account ${expectedAddress.slice(0, 6)}…${expectedAddress.slice(-4)} (linked to Playce), then stake again.`,
+      `In MetaMask, switch to account ${expectedAddress.slice(0, 6)}…${expectedAddress.slice(-4)} (linked to Playces), then stake again.`,
     );
   }
 

@@ -102,7 +102,7 @@ export function generateRoomCode(len = 6): string {
 /** Stable per-tab id so a refresh reclaims the same seat. */
 export function getClientId(): string {
   if (typeof window === "undefined") return "";
-  const key = "playce-67-client-id";
+  const key = "playces-67-client-id";
   let id = sessionStorage.getItem(key);
   if (!id) {
     id = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);

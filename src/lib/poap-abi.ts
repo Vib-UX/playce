@@ -1,7 +1,7 @@
 import { keccak256, toHex } from "viem";
 
-/** Minimal ABI for PlaycePass (see contracts/src/PlaycePass.sol). */
-export const playceAbi = [
+/** Minimal ABI for PlaycesPass (see contracts/src/PlaycesPass.sol). */
+export const playcesAbi = [
   {
     type: "function",
     name: "mintClaim",

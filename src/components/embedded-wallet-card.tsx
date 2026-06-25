@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { Copy, Check, ShieldCheck, Mail } from "lucide-react";
-import { usePlayceAuth } from "@/lib/auth/context";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { shortenAddress } from "@/lib/utils";
 import { ACTIVE_CHAIN } from "@/lib/chain";
 import { Badge } from "@/components/ui/badge";
 
 export function EmbeddedWalletCard() {
-  const { email, wallet, embedded } = usePlayceAuth();
+  const { email, wallet, embedded } = usePlaycesAuth();
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {

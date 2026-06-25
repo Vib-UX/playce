@@ -2,10 +2,10 @@
 
 import { useCallback, useMemo } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { PlayceAuthContext, type PlayceAuthValue } from "./context";
+import { PlaycesAuthContext, type PlaycesAuthValue } from "./context";
 
 /**
- * Bridges Privy's hooks into the app-wide PlayceAuth context. Rendered only
+ * Bridges Privy's hooks into the app-wide PlaycesAuth context. Rendered only
  * when a Privy app id is configured (see Providers). Email login + embedded
  * wallet creation is configured on the PrivyProvider.
  */
@@ -32,7 +32,7 @@ export function PrivyAuthBridge({ children }: { children: React.ReactNode }) {
     privyLogin();
   }, [privyLogin]);
 
-  const value = useMemo<PlayceAuthValue>(
+  const value = useMemo<PlaycesAuthValue>(
     () => ({
       ready,
       authenticated,
@@ -63,8 +63,8 @@ export function PrivyAuthBridge({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <PlayceAuthContext.Provider value={value}>
+    <PlaycesAuthContext.Provider value={value}>
       {children}
-    </PlayceAuthContext.Provider>
+    </PlaycesAuthContext.Provider>
   );
 }

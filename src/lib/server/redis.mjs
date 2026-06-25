@@ -1,5 +1,5 @@
 /**
- * Shared Redis client + tiny JSON helpers for Playce's server-side stores.
+ * Shared Redis client + tiny JSON helpers for Playces's server-side stores.
  *
  * The chess registry, stake registry and leaderboard all started life as
  * process-local maps that reset on every restart (fine for a single long-lived
@@ -13,7 +13,7 @@
  */
 import Redis from "ioredis";
 
-const CLIENT_KEY = "__playce_redis_client__";
+const CLIENT_KEY = "__playces_redis_client__";
 let warnedMissing = false;
 
 /** Lazily create (once) and return the shared ioredis client, or null. */

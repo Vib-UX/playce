@@ -4,7 +4,7 @@ import { createContext, useContext } from "react";
 
 export type AuthMode = "privy" | "demo";
 
-export interface PlayceAuthValue {
+export interface PlaycesAuthValue {
   /** Provider finished initializing. */
   ready: boolean;
   authenticated: boolean;
@@ -21,12 +21,12 @@ export interface PlayceAuthValue {
   getAccessToken: () => Promise<string | null>;
 }
 
-export const PlayceAuthContext = createContext<PlayceAuthValue | null>(null);
+export const PlaycesAuthContext = createContext<PlaycesAuthValue | null>(null);
 
-export function usePlayceAuth(): PlayceAuthValue {
-  const ctx = useContext(PlayceAuthContext);
+export function usePlaycesAuth(): PlaycesAuthValue {
+  const ctx = useContext(PlaycesAuthContext);
   if (!ctx) {
-    throw new Error("usePlayceAuth must be used within a PlayceAuthProvider");
+    throw new Error("usePlaycesAuth must be used within a PlaycesAuthProvider");
   }
   return ctx;
 }

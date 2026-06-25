@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy Playce's Chainlink CCIP proof-of-presence across two chains:
+# Deploy Playces's Chainlink CCIP proof-of-presence across two chains:
 #   - ProofSender   on the SOURCE chain (where chain battles settle)
 #   - ProofReceiver on the DEST chain   (where the soulbound proof is minted)
 # Then cross-allowlist the pair and wire addresses into the web app's .env.local.
@@ -10,7 +10,7 @@
 #   - Foundry installed; CCIP contracts available:
 #       git submodule update --init --recursive contracts/lib/chainlink-local
 #   - Deployer funded with gas on BOTH chains. The key is read from (in order):
-#       PRIVATE_KEY env, MINTER_PRIVATE_KEY env / .env.local, or ~/.playce/keystore
+#       PRIVATE_KEY env, MINTER_PRIVATE_KEY env / .env.local, or ~/.playces/keystore
 #   - After deploy: fund ProofSender with LINK on the source chain for CCIP fees
 #     (this script attempts an auto-fund from the deployer's LINK balance)
 #
@@ -18,7 +18,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-KEYSTORE_DIR="$HOME/.playce/keystore"
+KEYSTORE_DIR="$HOME/.playces/keystore"
 
 # ── CCIP directory (testnets) — override via env if Chainlink updates them ──
 SOURCE_CHAIN="${CCIP_SOURCE_CHAIN:-arbitrum-sepolia}"

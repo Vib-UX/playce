@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Deploy Playce's soulbound WIN BADGE for chain battles.
+# Deploy Playces's soulbound WIN BADGE for chain battles.
 #
 # Two badge rails (the winner's repped chain decides which):
 #   - Arbitrum-repped win  -> DIRECT backend mint on Arbitrum Sepolia.
-#       This script deploys a PlaycePass (soulbound ERC-721) there and wires
+#       This script deploys a PlaycesPass (soulbound ERC-721) there and wires
 #       BADGE_ARBITRUM_ADDRESS into .env.local.
 #   - Ethereum-repped win   -> Chainlink CCIP (Arbitrum Sepolia ProofSender ->
 #       Ethereum Sepolia ProofReceiverPass). That pair is deployed separately by
@@ -15,13 +15,13 @@
 # Prereqs:
 #   - Foundry installed.
 #   - Deployer funded with gas on Arbitrum Sepolia. Key resolved (in order):
-#       PRIVATE_KEY env, MINTER_PRIVATE_KEY env / .env.local, or ~/.playce/keystore
+#       PRIVATE_KEY env, MINTER_PRIVATE_KEY env / .env.local, or ~/.playces/keystore
 #
 # Usage:  bash contracts/deploy-badge.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-KEYSTORE_DIR="$HOME/.playce/keystore"
+KEYSTORE_DIR="$HOME/.playces/keystore"
 
 ARB_RPC="${ARBITRUM_SEPOLIA_RPC_URL:-https://sepolia-rollup.arbitrum.io/rpc}"
 
@@ -43,13 +43,13 @@ echo "Arbitrum Sepolia:   $ARB_RPC"
 
 cd "$ROOT/contracts"
 
-# ── Deploy the soulbound win badge (PlaycePass) on Arbitrum Sepolia ─────────
-echo "==> Deploying PlaycePass (win badge) on Arbitrum Sepolia..."
+# ── Deploy the soulbound win badge (PlaycesPass) on Arbitrum Sepolia ─────────
+echo "==> Deploying PlaycesPass (win badge) on Arbitrum Sepolia..."
 OUT="$(PRIVATE_KEY="$PK" \
-  forge script script/Deploy.s.sol:DeployPlaycePass \
+  forge script script/Deploy.s.sol:DeployPlaycesPass \
   --rpc-url "$ARB_RPC" --broadcast --skip-simulation 2>&1)"
 echo "$OUT"
-BADGE="$(echo "$OUT" | grep -oE 'PlaycePass deployed at: 0x[0-9a-fA-F]{40}' | grep -oE '0x[0-9a-fA-F]{40}')"
+BADGE="$(echo "$OUT" | grep -oE 'PlaycesPass deployed at: 0x[0-9a-fA-F]{40}' | grep -oE '0x[0-9a-fA-F]{40}')"
 [ -n "$BADGE" ] || { echo "Could not parse badge address." >&2; exit 1; }
 echo "Win badge (Arbitrum Sepolia): $BADGE"
 

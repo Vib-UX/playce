@@ -1,10 +1,10 @@
 "use client";
 
-import type { PlayceEvent } from "@/lib/types";
+import type { PlaycesEvent } from "@/lib/types";
 import type { EnsTicket, TicketTier } from "@/lib/ens";
 
 interface ClaimTicketArgs {
-  event: PlayceEvent;
+  event: PlaycesEvent;
   wallet: string;
   email?: string;
   tier?: TicketTier;

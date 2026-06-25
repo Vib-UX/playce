@@ -11,9 +11,9 @@ import {
   BadgeCheck,
   ExternalLink,
 } from "lucide-react";
-import { usePlayceStore } from "@/lib/store";
+import { usePlaycesStore } from "@/lib/store";
 import { useEnsTicketStore } from "@/lib/ens-ticket-store";
-import { usePlayceAuth } from "@/lib/auth/context";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { AttendanceGallery } from "@/components/attendance-gallery";
 import { EmbeddedWalletCard } from "@/components/embedded-wallet-card";
 import { PrivyAuthButton } from "@/components/privy-auth-button";
@@ -21,9 +21,9 @@ import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfilePage() {
-  const claims = usePlayceStore((s) => s.claims);
+  const claims = usePlaycesStore((s) => s.claims);
   const ensTickets = useEnsTicketStore((s) => s.tickets);
-  const { authenticated, email, ready } = usePlayceAuth();
+  const { authenticated, email, ready } = usePlaycesAuth();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -41,7 +41,7 @@ export default function ProfilePage() {
             </h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
               {authenticated
-                ? "Every onchain reward you've earned at Playce venues."
+                ? "Every onchain reward you've earned at Playces venues."
                 : "Sign in to view your rewards and check-in history."}
             </p>
           </div>

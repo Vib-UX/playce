@@ -1,8 +1,8 @@
 import type { EIP1193Provider } from "@privy-io/react-auth";
 
-/** Stable EIP-6963 identity for Playce's Privy embedded wallet bridge. */
-const PLAYCE_PRIVY_WALLET_UUID = "7f3c8b2a-9e41-4d5c-a8f6-2b1e0d9c4a73";
-const PLAYCE_PRIVY_RDNS = "app.playce.privy";
+/** Stable EIP-6963 identity for Playces's Privy embedded wallet bridge. */
+const PLAYCES_PRIVY_WALLET_UUID = "7f3c8b2a-9e41-4d5c-a8f6-2b1e0d9c4a73";
+const PLAYCES_PRIVY_RDNS = "app.playce.privy";
 
 export interface AnnouncedPrivyWallet {
   uuid: string;
@@ -15,10 +15,10 @@ function announce(
   address: string,
 ): void {
   const info = {
-    uuid: PLAYCE_PRIVY_WALLET_UUID,
-    name: "Playce Wallet",
+    uuid: PLAYCES_PRIVY_WALLET_UUID,
+    name: "Playces Wallet",
     icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23ff2e88'/%3E%3C/svg%3E",
-    rdns: PLAYCE_PRIVY_RDNS,
+    rdns: PLAYCES_PRIVY_RDNS,
   };
 
   window.dispatchEvent(
@@ -30,7 +30,7 @@ function announce(
   if (process.env.NODE_ENV === "development") {
     console.debug("[blink-bridge] announced Privy wallet", {
       address: address.slice(0, 6) + "…" + address.slice(-4),
-      rdns: PLAYCE_PRIVY_RDNS,
+      rdns: PLAYCES_PRIVY_RDNS,
     });
   }
 }
@@ -61,5 +61,5 @@ export function announcePrivyWallet(
 }
 
 export function getAnnouncedPrivyWalletUuid(): string {
-  return PLAYCE_PRIVY_WALLET_UUID;
+  return PLAYCES_PRIVY_WALLET_UUID;
 }

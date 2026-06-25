@@ -6,7 +6,7 @@ import { ComingSoonGame } from "@/components/coming-soon-game";
 export const metadata: Metadata = {
   title: "Rep Race",
   description:
-    "Tap to rep your chain up the venue leaderboard — coming soon to Playce.",
+    "Tap to rep your chain up the venue leaderboard — coming soon to Playces.",
 };
 
 export default function RepRacePage() {

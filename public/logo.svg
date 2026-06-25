@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 48" fill="none">
   <defs>
-    <linearGradient id="playce-logo" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+    <linearGradient id="playces-logo" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#ff2e88" />
       <stop offset="55%" stop-color="#18d9c0" />
       <stop offset="100%" stop-color="#c2ff3d" />
     </linearGradient>
   </defs>
   <g transform="translate(4 8)">
-    <rect x="0" y="0" width="32" height="32" rx="9" fill="url(#playce-logo)" />
+    <rect x="0" y="0" width="32" height="32" rx="9" fill="url(#playces-logo)" />
     <path
       d="M16 7.4a6.1 6.1 0 0 1 6.1 6.1c0 4.3-6.1 10.8-6.1 10.8S9.9 17.8 9.9 13.5A6.1 6.1 0 0 1 16 7.4z"
       fill="#ffffff"
@@ -22,5 +22,5 @@
     font-weight="700"
     letter-spacing="-0.5"
     fill="#15121f"
-  >Playce</text>
+  >Playces</text>
 </svg>

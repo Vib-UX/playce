@@ -22,10 +22,10 @@ interface IStakeEscrow {
 
 /**
  * @title ChessArbiter
- * @notice Trust-minimized settlement for Playce chess PvP.
+ * @notice Trust-minimized settlement for Playces chess PvP.
  *
  * Flow:
- *  1. Playce's backend (OPERATOR_ROLE) calls {openMatch} once both players have
+ *  1. Playces's backend (OPERATOR_ROLE) calls {openMatch} once both players have
  *     staked and a Lichess game id exists, emitting {ChessMatchOpened} (which a
  *     Chainlink CRE workflow watches).
  *  2. The CRE workflow fetches the authoritative Lichess result, ABI-encodes

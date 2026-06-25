@@ -19,12 +19,12 @@ import {Client} from
  * @notice Destination-chain soulbound proof-of-presence NFT minted from a
  *         Chainlink CCIP message.
  *
- * Playce's "chain battles" (The 67) settle off-chain. When a battle finishes,
+ * Playces's "chain battles" (The 67) settle off-chain. When a battle finishes,
  * the source chain's {ProofSender} sends a CCIP message carrying the winner,
  * an event id, and a metadata URI. CCIP delivers it here and `_ccipReceive`
  * mints the soulbound pass to the winner on this (destination) chain.
  *
- * Mirrors {PlaycePass} invariants:
+ * Mirrors {PlaycesPass} invariants:
  *  - One token per (eventId, wallet).
  *  - Tokens are soulbound (non-transferable).
  *  - Each token stores its eventId + metadata URI.
@@ -64,7 +64,7 @@ contract ProofReceiverPass is CCIPReceiver, ERC721URIStorage, AccessControl {
 
     constructor(address router, address admin)
         CCIPReceiver(router)
-        ERC721("Playce Proof of Presence", "PLAYCEPOP")
+        ERC721("Playces Proof of Presence", "PLAYCESPOP")
     {
         if (admin == address(0)) revert ZeroAddress();
         _grantRole(DEFAULT_ADMIN_ROLE, admin);

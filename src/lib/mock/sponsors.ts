@@ -10,7 +10,7 @@ const SETTLEMENT_REWARD_CHAIN = {
 };
 
 /**
- * Chains / products / oracles that "rep" at Playce venues. Attendees can rep
+ * Chains / products / oracles that "rep" at Playces venues. Attendees can rep
  * their favorite and play games skinned with the sponsor's AR model.
  *
  * AR skins reuse bundled placeholder .glb models for now — swap `arModelUrl`

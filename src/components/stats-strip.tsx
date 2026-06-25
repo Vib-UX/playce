@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { Users, BadgeCheck, Sparkles } from "lucide-react";
-import type { PlayceEvent } from "@/lib/types";
+import type { PlaycesEvent } from "@/lib/types";
 
 function Counter({ value }: { value: number }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -28,7 +28,7 @@ function Counter({ value }: { value: number }) {
   return <span ref={ref}>{display.toLocaleString()}</span>;
 }
 
-export function StatsStrip({ event }: { event: PlayceEvent }) {
+export function StatsStrip({ event }: { event: PlaycesEvent }) {
   const stats = [
     { label: "RSVPs", value: event.rsvpCount, icon: Users },
     { label: "Verified attendees", value: event.verifiedCount, icon: BadgeCheck },

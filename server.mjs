@@ -61,6 +61,6 @@ server.on("upgrade", (req, socket, head) => {
 
 server.listen(port, hostname, () => {
   console.log(
-    `▲ Playce ready on http://${hostname === "0.0.0.0" ? "localhost" : hostname}:${port} (ws: /api/ws)`,
+    `▲ Playces ready on http://${hostname === "0.0.0.0" ? "localhost" : hostname}:${port} (ws: /api/ws)`,
   );
 });

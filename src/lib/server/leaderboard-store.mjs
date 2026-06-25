@@ -13,7 +13,7 @@
  */
 import { loadJSON, saveJSON } from "./redis.mjs";
 
-const REDIS_KEY = "playce:leaderboard:state";
+const REDIS_KEY = "playces:leaderboard:state";
 
 /** @typedef {{ wallet: string, label: string, wins: number, battles: number, sponsorId: string|null, updatedAt: number }} PlayerRow */
 /** @typedef {{ sponsorId: string, wins: number }} ChainRow */

@@ -13,7 +13,7 @@ export function ComingSoonGame({ game }: { game: MiniGame }) {
           href="/"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="size-4" /> Back to Playce
+          <ArrowLeft className="size-4" /> Back to Playces
         </Link>
 
         <span className="mt-8 flex size-14 items-center justify-center rounded-2xl bg-[color-mix(in_oklab,var(--brand)_14%,transparent)] text-[var(--brand-deep)] dark:text-[var(--brand)]">

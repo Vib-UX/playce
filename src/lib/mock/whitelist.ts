@@ -7,7 +7,7 @@ import { sleep } from "@/lib/utils";
  * else still passes (open event) but you can flip `OPEN_EVENT` to false to
  * gate by the allowlist.
  */
-const APPROVED_DOMAINS = ["base.org", "playce.xyz", "ethereum.org"];
+const APPROVED_DOMAINS = ["base.org", "playces.fun", "ethereum.org"];
 const OPEN_EVENT = true;
 
 export interface WhitelistResult {

@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { PartyPopper, Sparkles, Lock, Ticket, Camera } from "lucide-react";
-import type { PlayceEvent, Claim, MintStatus, PinnedImage } from "@/lib/types";
-import { usePlayceAuth } from "@/lib/auth/context";
-import { usePlayceStore } from "@/lib/store";
+import type { PlaycesEvent, Claim, MintStatus, PinnedImage } from "@/lib/types";
+import { usePlaycesAuth } from "@/lib/auth/context";
+import { usePlaycesStore } from "@/lib/store";
 import { useGeofence } from "@/hooks/use-geofence";
 import { checkWhitelist } from "@/lib/mock/whitelist";
 import { claimMoment } from "@/lib/claim-service";
@@ -25,10 +25,10 @@ import { CaptureMoment } from "@/components/capture-moment";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export function ClaimPanel({ event }: { event: PlayceEvent }) {
-  const { authenticated, email, wallet, ready, getAccessToken } = usePlayceAuth();
-  const claims = usePlayceStore((s) => s.claims);
-  const addClaim = usePlayceStore((s) => s.addClaim);
+export function ClaimPanel({ event }: { event: PlaycesEvent }) {
+  const { authenticated, email, wallet, ready, getAccessToken } = usePlaycesAuth();
+  const claims = usePlaycesStore((s) => s.claims);
+  const addClaim = usePlaycesStore((s) => s.addClaim);
 
   const geo = useGeofence(event.venue);
   const [whitelist, setWhitelist] = useState<CheckState>("pending");

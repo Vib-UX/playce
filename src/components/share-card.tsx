@@ -20,10 +20,10 @@ export function ShareCard({ claim }: { claim: Claim }) {
   };
 
   const nativeShare = async () => {
-    const text = `I showed up and played at ${claim.eventTitle} — earned onchain on Playce.`;
+    const text = `I showed up and played at ${claim.eventTitle} — earned onchain on Playces.`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Playce", text, url: shareUrl });
+        await navigator.share({ title: "Playces", text, url: shareUrl });
       } catch {
         /* user cancelled */
       }

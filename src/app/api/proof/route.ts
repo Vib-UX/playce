@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { isAddress, parseEventLogs } from "viem";
 import { explorerTxUrl, ACTIVE_CHAIN } from "@/lib/chain";
-import { playceAbi, onchainEventId } from "@/lib/poap-abi";
+import { playcesAbi, onchainEventId } from "@/lib/poap-abi";
 import { PROOF_EVENT_SLUG } from "@/lib/games/six-seven";
 import { getSponsorById } from "@/lib/mock/sponsors";
 import {
   ONCHAIN_ENABLED,
-  PLAYCE_ADDRESS,
+  PLAYCES_ADDRESS,
   publicClient,
   getMinterWallet,
 } from "@/lib/server/minter";
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
       }
       const pinnedMeta = await pinJSON(
         metadataJson,
-        `playce-${PROOF_EVENT_SLUG}-${room || "room"}-${Date.now()}.json`,
+        `playces-${PROOF_EVENT_SLUG}-${room || "room"}-${Date.now()}.json`,
       );
       tokenURI = pinnedMeta.ipfsUri;
     } catch (err) {
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
   );
 
   // Mock fallback when no contract / minter is configured.
-  if (!ONCHAIN_ENABLED || !PLAYCE_ADDRESS) {
+  if (!ONCHAIN_ENABLED || !PLAYCES_ADDRESS) {
     const txHash = `0x${randomHex(64)}`;
     const tokenId = String(Math.floor(1000 + Math.random() * 9000));
     return NextResponse.json({
@@ -147,15 +147,15 @@ export async function POST(req: Request) {
   try {
     const { walletClient } = getMinterWallet();
     const hash = await walletClient.writeContract({
-      address: PLAYCE_ADDRESS,
-      abi: playceAbi,
+      address: PLAYCES_ADDRESS,
+      abi: playcesAbi,
       functionName: "mintClaim",
       args: [playerAddress, eventIdHash, tokenURI],
     });
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     const logs = parseEventLogs({
-      abi: playceAbi,
+      abi: playcesAbi,
       logs: receipt.logs,
       eventName: "Claimed",
     });

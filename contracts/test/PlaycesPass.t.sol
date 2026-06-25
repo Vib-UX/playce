@@ -2,11 +2,11 @@
 pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {PlaycePass} from "../src/PlaycePass.sol";
+import {PlaycesPass} from "../src/PlaycesPass.sol";
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 
-contract PlaycePassTest is Test {
-    PlaycePass pass;
+contract PlaycesPassTest is Test {
+    PlaycesPass pass;
 
     address admin = address(0xA11CE);
     address minter = address(0xB0B);
@@ -17,7 +17,7 @@ contract PlaycePassTest is Test {
     string uri = "ipfs://bafytest/metadata.json";
 
     function setUp() public {
-        pass = new PlaycePass(admin, minter);
+        pass = new PlaycesPass(admin, minter);
     }
 
     function test_Constructor_GrantsRoles() public view {
@@ -41,7 +41,7 @@ contract PlaycePassTest is Test {
         vm.startPrank(minter);
         pass.mintClaim(alice, eventId, uri);
         vm.expectRevert(
-            abi.encodeWithSelector(PlaycePass.AlreadyClaimed.selector, eventId, alice)
+            abi.encodeWithSelector(PlaycesPass.AlreadyClaimed.selector, eventId, alice)
         );
         pass.mintClaim(alice, eventId, uri);
         vm.stopPrank();
@@ -74,13 +74,13 @@ contract PlaycePassTest is Test {
         uint256 tokenId = pass.mintClaim(alice, eventId, uri);
 
         vm.prank(alice);
-        vm.expectRevert(PlaycePass.Soulbound.selector);
+        vm.expectRevert(PlaycesPass.Soulbound.selector);
         pass.transferFrom(alice, bob, tokenId);
     }
 
     function test_MintClaim_RevertsOnZeroAddress() public {
         vm.prank(minter);
-        vm.expectRevert(PlaycePass.ZeroAddress.selector);
+        vm.expectRevert(PlaycesPass.ZeroAddress.selector);
         pass.mintClaim(address(0), eventId, uri);
     }
 }

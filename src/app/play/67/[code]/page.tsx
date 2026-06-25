@@ -21,7 +21,7 @@ import {
   battleModeForSponsorId,
   rewardChainForSponsorId,
 } from "@/lib/battle";
-import { usePlayceAuth } from "@/lib/auth/context";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { PRIVY_ENABLED } from "@/lib/auth/context";
 import { useStakeDeposit } from "@/lib/blink/use-stake-deposit";
 import {
@@ -197,7 +197,7 @@ function SixSevenRoom() {
   const searchParams = useSearchParams();
   const repSponsorId = searchParams.get("rep") ?? undefined;
   const eventSlug = searchParams.get("event") ?? undefined;
-  const { email, wallet, getAccessToken, mode, authenticated } = usePlayceAuth();
+  const { email, wallet, getAccessToken, mode, authenticated } = usePlaycesAuth();
   const {
     stake,
     canStake,
@@ -734,7 +734,7 @@ function SixSevenRoom() {
       try {
         const ext = type.includes("mp4") ? "mp4" : "webm";
         const form = new FormData();
-        form.append("file", blob, `playce-67-${code || "room"}.${ext}`);
+        form.append("file", blob, `playces-67-${code || "room"}.${ext}`);
         const upRes = await fetch("/api/upload", { method: "POST", body: form });
         if (!upRes.ok) throw new Error(`Upload failed (${upRes.status})`);
         const clip = (await upRes.json()) as {
@@ -745,7 +745,7 @@ function SixSevenRoom() {
         const playerAddress = stakePlayerAddress ?? wallet;
         const token = await getAccessToken().catch(() => null);
         if (!playerAddress || !token) {
-          // No linked Playce wallet/session — keep the clip, skip the mint.
+          // No linked Playces wallet/session — keep the clip, skip the mint.
           setProofStatus("error");
           return;
         }
@@ -912,7 +912,7 @@ function SixSevenRoom() {
       ctx.shadowBlur = Math.round(W * 0.02);
       ctx.font = `600 ${Math.round(W * 0.034)}px ui-sans-serif, system-ui, sans-serif`;
       ctx.fillStyle = "rgba(255,255,255,0.92)";
-      ctx.fillText("Playce · The 67 · ETHGlobal NYC", pad, H - pad);
+      ctx.fillText("Playces · The 67 · ETHGlobal NYC", pad, H - pad);
       ctx.restore();
       recDrawRafRef.current = requestAnimationFrame(draw);
     };
@@ -1204,7 +1204,7 @@ function SixSevenRoom() {
                   When you stake, MetaMask will prompt you to switch to{" "}
                   <span className="text-foreground">{ACTIVE_CHAIN.name}</span> — approve that
                   first, then authorize USDC. You need USDC and a little ETH for gas on
-                  the same MetaMask account linked to Playce.
+                  the same MetaMask account linked to Playces.
                 </p>
               )}
             </div>

@@ -1,9 +1,9 @@
 import "server-only";
 
 /**
- * Lichess integration for Playce chess PvP.
+ * Lichess integration for Playces chess PvP.
  *
- * Players never leave to a bespoke chess engine — Playce creates a Lichess
+ * Players never leave to a bespoke chess engine — Playces creates a Lichess
  * "open challenge" (no OAuth required) and hands each player their colored
  * board link. The authoritative game RESULT is read back from the Lichess
  * export API. That result is what a Chainlink CRE workflow fetches to settle
@@ -71,7 +71,7 @@ export async function createOpenChallenge(
     clockLimit = 300,
     clockIncrement = 0,
     variant = "standard",
-    name = "Playce Chess Blitz",
+    name = "Playces Chess Blitz",
   } = opts;
 
   const body = new URLSearchParams({

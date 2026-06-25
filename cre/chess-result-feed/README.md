@@ -1,6 +1,6 @@
 # Chess Result Feed — Chainlink CRE workflow
 
-The trust-minimized settlement layer for Playce chess PvP. It reads the
+The trust-minimized settlement layer for Playces chess PvP. It reads the
 authoritative result of a Lichess game and writes a DON-signed report to the
 on-chain [`ChessArbiter`](../../contracts/src/ChessArbiter.sol), which releases
 the staked pot from `StakeEscrow` to the winner.

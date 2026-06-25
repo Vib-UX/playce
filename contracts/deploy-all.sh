@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy PlaycePass + StakeEscrow to a settlement chain.
+# Deploy PlaycesPass + StakeEscrow to a settlement chain.
 #
 # SETTLEMENT_CHAIN:
 #   sepolia (default) | base-sepolia | base
@@ -28,16 +28,16 @@ fi
 
 # shellcheck source=resolve-chain.sh
 source "$SCRIPT_DIR/resolve-chain.sh"
-resolve_playce_chain
+resolve_playces_chain
 
 if [ -n "${MINTER_PRIVATE_KEY:-}" ]; then
   PK="$MINTER_PRIVATE_KEY"
-elif [ -d "$HOME/.playce/keystore" ]; then
-  KEYSTORE_DIR="$HOME/.playce/keystore"
+elif [ -d "$HOME/.playces/keystore" ]; then
+  KEYSTORE_DIR="$HOME/.playces/keystore"
   KSFILE="$(ls -1 "$KEYSTORE_DIR" | head -1)"
   PK="$(cast wallet decrypt-keystore --keystore-dir "$KEYSTORE_DIR" "$KSFILE" --unsafe-password "" | awk '{print $NF}')"
 else
-  echo "Set MINTER_PRIVATE_KEY in .env.local or create ~/.playce/keystore." >&2
+  echo "Set MINTER_PRIVATE_KEY in .env.local or create ~/.playces/keystore." >&2
   exit 1
 fi
 
@@ -87,7 +87,7 @@ write_deployment_manifest() {
   "chainId": $CHAIN_ID,
   "deployer": "$DEPLOYER",
   "usdc": "$USDC_ADDRESS",
-  "playcePass": "$pass_addr",
+  "playcesPass": "$pass_addr",
   "stakeEscrow": "$escrow_addr",
   "deployedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
@@ -98,14 +98,14 @@ EOF
 cd "$ROOT/contracts"
 
 echo ""
-echo "── Deploying PlaycePass ──"
-PASS_OUT="$(PRIVATE_KEY="$PK" forge script script/Deploy.s.sol:DeployPlaycePass \
+echo "── Deploying PlaycesPass ──"
+PASS_OUT="$(PRIVATE_KEY="$PK" forge script script/Deploy.s.sol:DeployPlaycesPass \
   --rpc-url "$RPC_URL" --broadcast --skip-simulation 2>&1)" || {
   echo "$PASS_OUT" >&2
   exit 1
 }
 echo "$PASS_OUT"
-PASS_ADDR="$(echo "$PASS_OUT" | grep -oiE 'PlaycePass deployed at: 0x[0-9a-fA-F]{40}' | grep -oiE '0x[0-9a-fA-F]{40}' | tail -1)"
+PASS_ADDR="$(echo "$PASS_OUT" | grep -oiE 'PlaycesPass deployed at: 0x[0-9a-fA-F]{40}' | grep -oiE '0x[0-9a-fA-F]{40}' | tail -1)"
 
 echo ""
 echo "── Deploying StakeEscrow ──"
@@ -123,7 +123,7 @@ fi
 
 if [ "$UPDATE_ACTIVE_ENV" = "1" ]; then
   if [ -n "$PASS_ADDR" ]; then
-    set_env "NEXT_PUBLIC_PLAYCE_CONTRACT_ADDRESS" "$PASS_ADDR"
+    set_env "NEXT_PUBLIC_PLAYCES_CONTRACT_ADDRESS" "$PASS_ADDR"
   fi
   set_env "STAKE_ESCROW_ADDRESS" "$ESCROW_ADDR"
   set_env "NEXT_PUBLIC_STAKE_ESCROW_ADDRESS" "$ESCROW_ADDR"
@@ -140,7 +140,7 @@ write_deployment_manifest "${PASS_ADDR:-}" "$ESCROW_ADDR"
 
 echo ""
 echo "Done ($CHAIN_LABEL)."
-echo "  PlaycePass:  ${PASS_ADDR:-skipped}"
+echo "  PlaycesPass:  ${PASS_ADDR:-skipped}"
 echo "  StakeEscrow: $ESCROW_ADDR"
 if [ "$UPDATE_ACTIVE_ENV" = "1" ]; then
   echo "Restart 'npm run dev' to pick up .env.local changes."

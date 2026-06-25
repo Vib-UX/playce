@@ -1,7 +1,7 @@
 import type { MiniGame } from "@/lib/types";
 
 /**
- * Mini-games playable at Playce venues. The flagship is the 67 — a
+ * Mini-games playable at Playces venues. The flagship is the 67 — a
  * head-to-head, p2p-staked camera game. Add more games here as they ship.
  */
 export const GAMES: MiniGame[] = [

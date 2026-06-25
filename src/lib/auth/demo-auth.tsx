@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { PlayceAuthContext, type PlayceAuthValue } from "./context";
+import { PlaycesAuthContext, type PlaycesAuthValue } from "./context";
 
 function randomWallet(): string {
   const chars = "0123456789abcdef";
@@ -21,7 +21,7 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
   const [wallet, setWallet] = useState<string>();
 
   const login = useCallback(async (inputEmail?: string) => {
-    const finalEmail = inputEmail?.trim() || "guest@playce.xyz";
+    const finalEmail = inputEmail?.trim() || "guest@playces.fun";
     setEmail(finalEmail);
     // Simulate embedded wallet provisioning latency.
     await new Promise((r) => setTimeout(r, 650));
@@ -35,7 +35,7 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
     setWallet(undefined);
   }, []);
 
-  const value = useMemo<PlayceAuthValue>(
+  const value = useMemo<PlaycesAuthValue>(
     () => ({
       ready: true,
       authenticated,
@@ -51,8 +51,8 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <PlayceAuthContext.Provider value={value}>
+    <PlaycesAuthContext.Provider value={value}>
       {children}
-    </PlayceAuthContext.Provider>
+    </PlaycesAuthContext.Provider>
   );
 }

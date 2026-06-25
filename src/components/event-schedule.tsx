@@ -1,8 +1,8 @@
-import type { PlayceEvent } from "@/lib/types";
+import type { PlaycesEvent } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { formatTime } from "@/lib/utils";
 
-export function EventSchedule({ event }: { event: PlayceEvent }) {
+export function EventSchedule({ event }: { event: PlaycesEvent }) {
   return (
     <div className="relative space-y-0">
       {event.schedule.map((item, i) => (

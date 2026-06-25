@@ -10,7 +10,7 @@ export function SiteFooter() {
           <div className="max-w-sm">
             <div className="flex items-center gap-2">
               <BrandMark />
-              <span className="font-display text-lg font-semibold">Playce</span>
+              <span className="font-display text-lg font-semibold">Playces</span>
             </div>
             <p className="mt-3 text-sm text-muted-foreground">
               Show up, play, and earn at real-world venues. Check in, win
@@ -50,7 +50,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-border/70 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} Playce. Built on {ACTIVE_CHAIN.name}.</p>
+          <p>© {new Date().getFullYear()} Playces. Built on {ACTIVE_CHAIN.name}.</p>
           <p>Show up. Play. Earn.</p>
         </div>
       </div>

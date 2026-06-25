@@ -136,9 +136,9 @@ export function isWalletOnActiveChain(chainId: string): boolean {
 }
 
 /**
- * Playce reward collection address. Replace with the deployed ERC-721
+ * Playces reward collection address. Replace with the deployed ERC-721
  * contract address once `contracts/` is deployed on the active chain.
  */
-export const PLAYCE_CONTRACT_ADDRESS = (process.env
-  .NEXT_PUBLIC_PLAYCE_CONTRACT_ADDRESS ??
+export const PLAYCES_CONTRACT_ADDRESS = (process.env
+  .NEXT_PUBLIC_PLAYCES_CONTRACT_ADDRESS ??
   "0x0000000000000000000000000000000000000000") as `0x${string}`;

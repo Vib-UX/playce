@@ -9,7 +9,7 @@ import {
   type SignerRequest,
 } from "@swype-org/deposit";
 import { getEmbeddedConnectedWallet, useWallets } from "@privy-io/react-auth";
-import { usePlayceAuth } from "@/lib/auth/context";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { ACTIVE_CHAIN, isWalletOnActiveChain } from "@/lib/chain";
 import { announcePrivyWallet } from "@/lib/blink/announce-privy-wallet";
 import {
@@ -39,10 +39,10 @@ type DepositStatus = "idle" | "signer-loading" | "iframe-active" | "completed" |
  * or Strict Mode cleanup.
  */
 export function useStakeDeposit() {
-  const { wallet, getAccessToken, mode, authenticated } = usePlayceAuth();
+  const { wallet, getAccessToken, mode, authenticated } = usePlaycesAuth();
   const { ready: walletsReady, wallets } = useWallets();
   // Privy-owned address used for stake attribution + server ownership checks.
-  // The embedded Playce wallet is always linked; Blink funds from MetaMask in
+  // The embedded Playces wallet is always linked; Blink funds from MetaMask in
   // its own picker, so this stays independent of the funding wallet.
   const playerAddress = getEmbeddedConnectedWallet(wallets)?.address ?? wallet;
   const depositRef = useRef<Deposit | null>(null);
@@ -134,7 +134,7 @@ export function useStakeDeposit() {
     const stakingWallet = getBlinkStakingWallet(wallets, wallet);
     if (!stakingWallet) {
       throw new Error(
-        "Connect MetaMask (or another wallet) to your Playce account before staking.",
+        "Connect MetaMask (or another wallet) to your Playces account before staking.",
       );
     }
 
@@ -163,7 +163,7 @@ export function useStakeDeposit() {
 
       const ownedAddress = playerAddress;
       if (!ownedAddress) {
-        throw new Error("No Playce wallet found for stake attribution.");
+        throw new Error("No Playces wallet found for stake attribution.");
       }
 
       return requestDeposit({

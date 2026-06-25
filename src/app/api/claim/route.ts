@@ -6,11 +6,11 @@ import { checkGeofence, DEMO_FORCE_INSIDE_ZONE } from "@/lib/mock/geofence";
 import { checkWhitelist } from "@/lib/mock/whitelist";
 import { mintReward } from "@/lib/mock/mint";
 import { explorerTxUrl, ACTIVE_CHAIN } from "@/lib/chain";
-import { playceAbi, onchainEventId } from "@/lib/poap-abi";
+import { playcesAbi, onchainEventId } from "@/lib/poap-abi";
 import { ALLOW_MULTIPLE_CLAIMS } from "@/lib/config";
 import {
   ONCHAIN_ENABLED,
-  PLAYCE_ADDRESS,
+  PLAYCES_ADDRESS,
   publicClient,
   getMinterWallet,
 } from "@/lib/server/minter";
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
       }
       const pinnedMeta = await pinJSON(
         metadataJson,
-        `playce-${event.slug}-${Date.now()}.json`,
+        `playces-${event.slug}-${Date.now()}.json`,
       );
       tokenURI = pinnedMeta.ipfsUri;
     } catch (err) {
@@ -158,7 +158,7 @@ export async function POST(req: Request) {
 
   // 4a. Mock fallback (no contract / minter configured yet) — keeps the flow
   // working before deployment.
-  if (!ONCHAIN_ENABLED || !PLAYCE_ADDRESS) {
+  if (!ONCHAIN_ENABLED || !PLAYCES_ADDRESS) {
     const result = await mintReward(event, address, email);
     const claim: Claim = {
       ...result.claim,
@@ -184,8 +184,8 @@ export async function POST(req: Request) {
   try {
     if (!ALLOW_MULTIPLE_CLAIMS) {
       const already = await publicClient.readContract({
-        address: PLAYCE_ADDRESS,
-        abi: playceAbi,
+        address: PLAYCES_ADDRESS,
+        abi: playcesAbi,
         functionName: "hasClaimed",
         args: [eventIdHash, address],
       });
@@ -199,15 +199,15 @@ export async function POST(req: Request) {
 
     const { walletClient } = getMinterWallet();
     const hash = await walletClient.writeContract({
-      address: PLAYCE_ADDRESS,
-      abi: playceAbi,
+      address: PLAYCES_ADDRESS,
+      abi: playcesAbi,
       functionName: "mintClaim",
       args: [address, eventIdHash, tokenURI],
     });
 
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     const logs = parseEventLogs({
-      abi: playceAbi,
+      abi: playcesAbi,
       logs: receipt.logs,
       eventName: "Claimed",
     });

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Loader2, Sparkles } from "lucide-react";
-import { usePlayceAuth } from "@/lib/auth/context";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { ACTIVE_CHAIN } from "@/lib/chain";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -25,7 +25,7 @@ export function PrivyAuthButton({
   children,
   ...props
 }: PrivyAuthButtonProps) {
-  const { login, mode, ready } = usePlayceAuth();
+  const { login, mode, ready } = usePlaycesAuth();
   const [demoOpen, setDemoOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);

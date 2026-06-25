@@ -1,5 +1,5 @@
 /**
- * Playce — Chess result feed (Chainlink CRE workflow).
+ * Playces — Chess result feed (Chainlink CRE workflow).
  *
  * This is the "custom feed" that brings the authoritative Lichess result
  * on-chain trust-minimized. Forked from the CRE Custom Data Feed starter

@@ -7,7 +7,7 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title StakeEscrow
- * @notice Holds USDC stakes for Playce "The 67" head-to-head matches.
+ * @notice Holds USDC stakes for Playces "The 67" head-to-head matches.
  *
  * Blink deposits USDC directly to this contract. After server-side transfer
  * verification, the backend (OPERATOR_ROLE) calls `creditStake` to attribute

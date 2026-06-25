@@ -6,7 +6,7 @@
       "chainId": 8453,
       "explorer": "https://basescan.org",
       "contracts": {
-        "PlaycePass": {
+        "PlaycesPass": {
           "address": "0xC1eF7A81195538bc529b8Ed42182eC73764450FC",
           "role": "Soulbound memory / proof-of-presence mint (Base mainnet)",
           "verified": {
@@ -41,7 +41,7 @@
             "blockscout": "https://arbitrum-sepolia.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC"
           }
         },
-        "PlaycePass": {
+        "PlaycesPass": {
           "address": "0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904",
           "role": "Soulbound win badge — direct mint for Arbitrum-repped chain battles",
           "verified": {

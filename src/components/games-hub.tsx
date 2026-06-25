@@ -51,8 +51,8 @@ function GameCard({ game }: { game: MiniGame }) {
 
 export function GamesHub({
   games,
-  title = "Games at the venue",
-  subtitle = "Play head-to-head and earn — you have to be there.",
+  title = "Head-to-head games",
+  subtitle = "Play head-to-head and earn — online or at a venue.",
 }: {
   games: MiniGame[];
   title?: string;

@@ -1,5 +1,5 @@
 /**
- * PRODUCTION settlement broadcaster for Playce chess — REAL funds on Base.
+ * PRODUCTION settlement broadcaster for Playces chess — REAL funds on Base.
  *
  * This is the broadcasting counterpart to `simulate-local.mjs --settle`. Use it
  * to actually settle a finished chess pot on Base mainnet when you are NOT yet
@@ -132,7 +132,7 @@ async function main() {
   }
 
   console.log("─".repeat(64));
-  console.log("Playce chess — PRODUCTION settlement broadcaster");
+  console.log("Playces chess — PRODUCTION settlement broadcaster");
   console.log(`Mode    : ${DO_BROADCAST ? "BROADCAST (real tx)" : "dry-run (no tx)"}`);
   console.log(`RPC     : ${BASE_RPC}`);
   console.log(`Route   : ${ARBITER_ADDRESS ? `ChessArbiter ${ARBITER_ADDRESS}` : `StakeEscrow ${ESCROW_ADDRESS}`}`);

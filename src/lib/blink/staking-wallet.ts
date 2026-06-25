@@ -32,6 +32,6 @@ export function getBlinkStakingWallet(
 
 export function stakingWalletLabel(wallet: ConnectedWallet): string {
   if (wallet.walletClientType === "metamask") return "MetaMask";
-  if (wallet.walletClientType === "privy") return "Playce Wallet";
+  if (wallet.walletClientType === "privy") return "Playces Wallet";
   return wallet.meta.name || "Wallet";
 }

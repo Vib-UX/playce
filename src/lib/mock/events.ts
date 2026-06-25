@@ -1,19 +1,19 @@
-import type { PlayceEvent } from "@/lib/types";
+import type { PlaycesEvent } from "@/lib/types";
 
 /**
- * Polished placeholder data for the flagship Playce venue plus a few supporting
+ * Polished placeholder data for the flagship Playces venue plus a few supporting
  * venues for the gallery / landing surfaces. Swap with a real CMS or onchain
- * registry later — the shape matches `PlayceEvent`. Sponsors and games are
+ * registry later — the shape matches `PlaycesEvent`. Sponsors and games are
  * referenced by id (see `mock/sponsors.ts` and `mock/games.ts`).
  */
-export const EVENTS: PlayceEvent[] = [
+export const EVENTS: PlaycesEvent[] = [
   {
     id: "evt_ethglobal_nyc",
     slug: "ethglobal-nyc",
     title: "ETHGlobal New York 2026",
     tagline: "Rep a chain, play, and unlock sponsor drops at the venue.",
     description:
-      "ETHGlobal New York 2026 is a 36-hour hackathon bringing the world's best builders together. Between hacking, drop into the Playce arena to check in, throw the 67, rep your favorite chain as an AR skin, and unlock sponsor airdrops from Chainlink, Pyth, and Blink.",
+      "ETHGlobal New York 2026 is a 36-hour hackathon bringing the world's best builders together. Between hacking, drop into the Playces arena to check in, throw the 67, rep your favorite chain as an AR skin, and unlock sponsor airdrops from Chainlink, Pyth, and Blink.",
     coverImageColor: "#c2ff3d",
     coverImageUrl: "/events/ethglobal-nyc.png",
     kind: "Hackathon",
@@ -150,7 +150,7 @@ export const EVENTS: PlayceEvent[] = [
       },
     ],
     collectible: {
-      name: "ETHGlobal New York 2026 — Playce Moment",
+      name: "ETHGlobal New York 2026 — Playces Moment",
       symbol: "ETHNYC",
       description:
         "A verified onchain reward from the ETHGlobal New York 2026 hackathon.",
@@ -170,7 +170,7 @@ export const EVENTS: PlayceEvent[] = [
     title: "ETHConf",
     tagline: "Where Ethereum meets institutional finance — now with games.",
     description:
-      "ETHConf 2026 brings builders, institutions, and researchers together. Three days of keynotes and deep technical sessions at the Javits Center — and a Playce arena in the lobby where you check in, play, and earn sponsor airdrops between talks.",
+      "ETHConf 2026 brings builders, institutions, and researchers together. Three days of keynotes and deep technical sessions at the Javits Center — and a Playces arena in the lobby where you check in, play, and earn sponsor airdrops between talks.",
     coverImageColor: "#18d9c0",
     coverImageUrl: "/events/ethconf.png",
     kind: "Conference",
@@ -214,7 +214,7 @@ export const EVENTS: PlayceEvent[] = [
         startISO: "2026-06-08T08:30:00-04:00",
         endISO: "2026-06-08T10:00:00-04:00",
         title: "Registration & opening keynote",
-        description: "Doors open. Check in to the Playce arena and grab a coffee.",
+        description: "Doors open. Check in to the Playces arena and grab a coffee.",
         track: "Day 1 · Mainstage",
       },
       {
@@ -260,7 +260,7 @@ export const EVENTS: PlayceEvent[] = [
       },
     ],
     collectible: {
-      name: "ETHConf 2026 — Playce Moment",
+      name: "ETHConf 2026 — Playces Moment",
       symbol: "ETHCONF",
       description:
         "A verified onchain reward from ETHConf 2026 at the Javits Center.",
@@ -279,7 +279,7 @@ export const EVENTS: PlayceEvent[] = [
     title: "ETHGlobal Lisbon 2026",
     tagline: "Rep a chain, play, and unlock sponsor drops at the venue.",
     description:
-      "ETHGlobal Lisbon 2026 brings the European builder community to the Atlantic coast for a 36-hour hackathon. Between hacking, drop into the Playce arena to check in, throw the 67, rep your favorite chain as an AR skin, and unlock sponsor airdrops from Chainlink, Pyth, and Blink.",
+      "ETHGlobal Lisbon 2026 brings the European builder community to the Atlantic coast for a 36-hour hackathon. Between hacking, drop into the Playces arena to check in, throw the 67, rep your favorite chain as an AR skin, and unlock sponsor airdrops from Chainlink, Pyth, and Blink.",
     coverImageColor: "#ff7a3d",
     coverImageUrl: "/events/ethglobal-lisbon.png",
     kind: "Hackathon",
@@ -373,7 +373,7 @@ export const EVENTS: PlayceEvent[] = [
       },
     ],
     collectible: {
-      name: "ETHGlobal Lisbon 2026 — Playce Moment",
+      name: "ETHGlobal Lisbon 2026 — Playces Moment",
       symbol: "ETHLIS",
       description:
         "A verified onchain reward from the ETHGlobal Lisbon 2026 hackathon.",
@@ -390,10 +390,10 @@ export const EVENTS: PlayceEvent[] = [
 
 export const FEATURED_EVENT = EVENTS[0];
 
-export function getEventBySlug(slug: string): PlayceEvent | undefined {
+export function getEventBySlug(slug: string): PlaycesEvent | undefined {
   return EVENTS.find((e) => e.slug === slug);
 }
 
-export function getEventById(id: string): PlayceEvent | undefined {
+export function getEventById(id: string): PlaycesEvent | undefined {
   return EVENTS.find((e) => e.id === id);
 }

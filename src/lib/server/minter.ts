@@ -17,10 +17,10 @@ import { ACTIVE_CHAIN, rpcUrlForChain } from "@/lib/chain";
 
 const RPC_URL = rpcUrlForChain(ACTIVE_CHAIN.id);
 
-const rawContract = process.env.NEXT_PUBLIC_PLAYCE_CONTRACT_ADDRESS ?? "";
+const rawContract = process.env.NEXT_PUBLIC_PLAYCES_CONTRACT_ADDRESS ?? "";
 const rawKey = process.env.MINTER_PRIVATE_KEY ?? "";
 
-export const PLAYCE_ADDRESS: Address | null =
+export const PLAYCES_ADDRESS: Address | null =
   isAddress(rawContract) &&
   rawContract.toLowerCase() !== "0x0000000000000000000000000000000000000000"
     ? (rawContract as Address)
@@ -33,7 +33,7 @@ const minterKey = rawKey.startsWith("0x")
     : null;
 
 /** True when the backend can actually mint onchain. */
-export const ONCHAIN_ENABLED = Boolean(PLAYCE_ADDRESS && minterKey);
+export const ONCHAIN_ENABLED = Boolean(PLAYCES_ADDRESS && minterKey);
 
 export const publicClient = createPublicClient({
   chain: ACTIVE_CHAIN,

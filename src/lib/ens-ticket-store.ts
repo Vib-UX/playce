@@ -27,6 +27,6 @@ export const useEnsTicketStore = create<EnsTicketState>()(
         get().tickets.find((t) => t.eventId === eventId),
       reset: () => set({ tickets: [] }),
     }),
-    { name: "playce-ens-tickets-v1" },
+    { name: "playces-ens-tickets-v1" },
   ),
 );

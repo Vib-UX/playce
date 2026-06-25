@@ -1,5 +1,5 @@
 /**
- * In-memory chess match registry for Playce chess PvP.
+ * In-memory chess match registry for Playces chess PvP.
  *
  * Mirrors `stake-registry.mjs` / `leaderboard-store.mjs`: a single process-local
  * map (shared via globalThis) used by the Next API routes (`/api/chess/*`) and
@@ -19,7 +19,7 @@
  */
 import { loadJSON, saveJSON } from "./redis.mjs";
 
-const REDIS_KEY = "playce:chess:matches";
+const REDIS_KEY = "playces:chess:matches";
 
 /**
  * @typedef {Object} ChessMatch
@@ -42,7 +42,7 @@ const REDIS_KEY = "playce:chess:matches";
  * @property {number} updatedAt
  */
 
-const GLOBAL_KEY = "__playce_chess_matches__";
+const GLOBAL_KEY = "__playces_chess_matches__";
 if (!globalThis[GLOBAL_KEY]) {
   globalThis[GLOBAL_KEY] = new Map();
 }

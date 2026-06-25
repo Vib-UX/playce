@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       typeof form.get("filename") === "string"
         ? (form.get("filename") as string)
         : undefined;
-    const name = providedName || `playce-moment-${Date.now()}.${ext}`;
+    const name = providedName || `playces-moment-${Date.now()}.${ext}`;
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
       const result = await pinFile(bytes, name, contentType);
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
 
   try {
     const ext = contentType.split("/")[1]?.split("+")[0] || "png";
-    const name = filename || `playce-moment-${Date.now()}.${ext}`;
+    const name = filename || `playces-moment-${Date.now()}.${ext}`;
     const result = await pinFile(bytes, name, contentType);
     return NextResponse.json({ ...result, mediaType: "image" });
   } catch (err) {

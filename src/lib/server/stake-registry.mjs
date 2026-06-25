@@ -8,7 +8,7 @@
  */
 import { loadJSON, saveJSON } from "./redis.mjs";
 
-const REDIS_KEY = "playce:stakes:rooms";
+const REDIS_KEY = "playces:stakes:rooms";
 
 /** @typedef {"host"|"guest"} StakeRole */
 
@@ -23,7 +23,7 @@ const REDIS_KEY = "playce:stakes:rooms";
  */
 
 /** @type {Map<string, { host?: ConfirmedStake, guest?: ConfirmedStake }>} */
-const GLOBAL_KEY = "__playce_stake_registry__";
+const GLOBAL_KEY = "__playces_stake_registry__";
 if (!globalThis[GLOBAL_KEY]) {
   globalThis[GLOBAL_KEY] = new Map();
 }

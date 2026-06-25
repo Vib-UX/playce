@@ -1,7 +1,7 @@
 /**
  * Shared ENS subname-ticket helpers (client + server safe — no secrets here).
  *
- * Playce issues each attendee an event-scoped subname (e.g.
+ * Playces issues each attendee an event-scoped subname (e.g.
  * `alice-ethglobal-nyc.playce.eth`) off the parent `playce.eth`, registered in a
  * Durin-style L2 registry on Sepolia and resolved via viem's ENSv2 Universal
  * Resolver. This module holds the label rules, the shared ticket shape, and

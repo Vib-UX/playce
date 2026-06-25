@@ -1,6 +1,6 @@
-# Playce
+# Playces
 
-**Show up. Play. Earn.** Playce turns real-world venues into interactive social
+**Show up. Play. Earn.** Playces turns real-world venues into interactive social
 arenas — geofenced check-ins, embedded wallets, onchain mini-games (like the
 **67**), chain/product airdrops, and collectible onchain rewards on **Base**.
 
@@ -30,10 +30,10 @@ Machine-readable manifest: `contracts/deployments/production.json`.
 
 | Network | Contract | Address (Blockscout) | Role |
 | ------- | -------- | -------------------- | ---- |
-| **Base mainnet** (8453) | `PlaycePass` | [`0xC1eF…50FC`](https://base.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Soulbound memory / proof-of-presence mint |
+| **Base mainnet** (8453) | `PlaycesPass` | [`0xC1eF…50FC`](https://base.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Soulbound memory / proof-of-presence mint |
 | **Base mainnet** (8453) | `StakeEscrow` | [`0x01D5…0823`](https://base.blockscout.com/address/0x01D514432b6694D8260bbA0fc2af3Cf327020823) | Blink USDC stake escrow + winner settlement |
 | **Arbitrum Sepolia** (421614) | `ProofSender` | [`0xC1eF…50FC`](https://arbitrum-sepolia.blockscout.com/address/0xC1eF7A81195538bc529b8Ed42182eC73764450FC) | Chainlink CCIP sender → Ethereum Sepolia |
-| **Arbitrum Sepolia** (421614) | `PlaycePass` | [`0x6847…7904`](https://arbitrum-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | Direct win badge mint (Arbitrum-repped battles) |
+| **Arbitrum Sepolia** (421614) | `PlaycesPass` | [`0x6847…7904`](https://arbitrum-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | Direct win badge mint (Arbitrum-repped battles) |
 | **Ethereum Sepolia** (11155111) | `ProofReceiverPass` | [`0x6847…7904`](https://eth-sepolia.blockscout.com/address/0x68476f79D46A3A7A0ce7cbA40E4eF77264c47904) | CCIP receiver — win badge mint (Ethereum-repped battles) |
 
 **CCIP lane:** Arbitrum Sepolia → Ethereum Sepolia. `ProofSender` must hold LINK
@@ -93,7 +93,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Route               | Description |
 | ------------------- | ----------- |
-| `/`                 | Hero, featured venues, how it works, why Playce |
+| `/`                 | Hero, featured venues, how it works, why Playces |
 | `/event/[slug]`     | Venue hero, schedule, games, airdrops, venue map, check-in rail |
 | `/play/67`          | The 67 game — lobby, stake, camera + AR sponsor skin, scoring |
 | `/claim`            | Check-in eligibility, geofence, wallet status, reward mint, 3D preview |
@@ -108,7 +108,7 @@ source verification, and local/testnet deploys.
 
 ### Contract overview
 
-#### `PlaycePass` (`contracts/src/PlaycePass.sol`)
+#### `PlaycesPass` (`contracts/src/PlaycesPass.sol`)
 
 - ERC-721 (`ERC721URIStorage` + `AccessControl`).
 - **One claim per `(eventId, wallet)`** — enforced onchain.
@@ -148,7 +148,7 @@ Or verify one contract manually:
 ```bash
 cd contracts
 forge verify-contract 0xC1eF7A81195538bc529b8Ed42182eC73764450FC \
-  src/PlaycePass.sol:PlaycePass \
+  src/PlaycesPass.sol:PlaycesPass \
   --chain base \
   --verifier sourcify \
   --constructor-args $(cast abi-encode "constructor(address,address)" \
@@ -159,7 +159,7 @@ forge verify-contract 0xC1eF7A81195538bc529b8Ed42182eC73764450FC \
 ### Deploying locally / testnets
 
 ```bash
-# Deploy PlaycePass + StakeEscrow to Base Sepolia (dev)
+# Deploy PlaycesPass + StakeEscrow to Base Sepolia (dev)
 bash contracts/deploy.sh
 
 # Deploy CCIP sender/receiver + badge contracts (testnets)

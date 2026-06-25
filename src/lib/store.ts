@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Claim } from "@/lib/types";
 
-interface PlayceState {
+interface PlaycesState {
   claims: Claim[];
   addClaim: (claim: Claim) => void;
   getClaimById: (id: string) => Claim | undefined;
@@ -13,7 +13,7 @@ interface PlayceState {
   reset: () => void;
 }
 
-export const usePlayceStore = create<PlayceState>()(
+export const usePlaycesStore = create<PlaycesState>()(
   persist(
     (set, get) => ({
       claims: [],
@@ -30,6 +30,6 @@ export const usePlayceStore = create<PlayceState>()(
         get().claims.some((c) => c.eventId === eventId),
       reset: () => set({ claims: [] }),
     }),
-    { name: "playce-state-v1" },
+    { name: "playces-state-v1" },
   ),
 );

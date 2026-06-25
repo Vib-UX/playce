@@ -40,8 +40,8 @@ export function collectibleSvg(art: CollectibleArt, title: string): string {
   )}</text>
   <text x="60" y="740" fill="white" fill-opacity="0.7" font-family="ui-monospace, monospace" font-size="22">${escapeXml(
     edition,
-  )} · Playce Moment</text>
-  <text x="740" y="72" text-anchor="end" fill="white" fill-opacity="0.65" font-family="ui-monospace, monospace" font-size="22">Playce · Base</text>
+  )} · Playces Moment</text>
+  <text x="740" y="72" text-anchor="end" fill="white" fill-opacity="0.65" font-family="ui-monospace, monospace" font-size="22">Playces · Base</text>
 </svg>`;
 }
 

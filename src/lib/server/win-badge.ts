@@ -8,14 +8,14 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { ARBITRUM_SEPOLIA, rpcUrlForChain } from "@/lib/chain";
-import { playceAbi } from "@/lib/poap-abi";
+import { playcesAbi } from "@/lib/poap-abi";
 import { rewardChainForSponsorId } from "@/lib/battle";
 import { CCIP_ENABLED, sendProofCrossChain } from "@/lib/server/ccip-minter";
 
 /**
  * Server-only soulbound WIN BADGE minter for chain battles. The badge is minted
  * on the winner's repped chain:
- *  - Arbitrum-repped win -> DIRECT backend mint on Arbitrum Sepolia (PlaycePass).
+ *  - Arbitrum-repped win -> DIRECT backend mint on Arbitrum Sepolia (PlaycesPass).
  *  - Ethereum-repped win  -> Chainlink CCIP (Arbitrum Sepolia -> Ethereum Sepolia
  *    ProofReceiverPass), reusing `ccip-minter`.
  *
@@ -94,7 +94,7 @@ export async function mintWinBadge(args: {
 
   const hash = await walletClient.writeContract({
     address: BADGE_ARBITRUM,
-    abi: playceAbi,
+    abi: playcesAbi,
     functionName: "mintClaim",
     args: [args.winner, args.eventId, args.uri],
   });

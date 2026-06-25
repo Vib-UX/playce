@@ -235,7 +235,7 @@ export function CaptureMoment({
     try {
       const ext = type.includes("mp4") ? "mp4" : "webm";
       const form = new FormData();
-      form.append("file", blob, `playce-moment.${ext}`);
+      form.append("file", blob, `playces-moment.${ext}`);
       const res = await fetch("/api/upload", { method: "POST", body: form });
       if (!res.ok) throw new Error(`Upload failed (${res.status})`);
       const data = (await res.json()) as PinnedImage;
@@ -257,7 +257,7 @@ export function CaptureMoment({
       ctx.shadowBlur = Math.round(W * 0.02);
       ctx.font = `600 ${Math.round(W * 0.038)}px ui-sans-serif, system-ui, sans-serif`;
       ctx.fillStyle = "rgba(255,255,255,0.92)";
-      ctx.fillText("Playce · You were there", pad, H - pad);
+      ctx.fillText("Playces · You were there", pad, H - pad);
       ctx.font = `500 ${Math.round(W * 0.028)}px ui-sans-serif, system-ui, sans-serif`;
       ctx.fillStyle = "rgba(255,255,255,0.78)";
       ctx.fillText(eventTitle, pad, H - pad - Math.round(W * 0.058));
@@ -374,7 +374,7 @@ export function CaptureMoment({
     if (!clip) return;
     const ext = clip.type.includes("mp4") ? "mp4" : "webm";
     try {
-      const file = new File([clip.blob], `playce-moment.${ext}`, {
+      const file = new File([clip.blob], `playces-moment.${ext}`, {
         type: clip.type,
       });
       const nav = navigator as Navigator & {
@@ -383,7 +383,7 @@ export function CaptureMoment({
       if (nav.canShare?.({ files: [file] }) && nav.share) {
         await nav.share({
           files: [file],
-          title: "Playce · Show up. Play. Earn.",
+          title: "Playces · Show up. Play. Earn.",
           text: `I played at ${eventTitle}.`,
         });
         return;
@@ -393,7 +393,7 @@ export function CaptureMoment({
     }
     const a = document.createElement("a");
     a.href = clip.url;
-    a.download = `playce-moment.${ext}`;
+    a.download = `playces-moment.${ext}`;
     a.click();
   }, [clip, eventTitle]);
 

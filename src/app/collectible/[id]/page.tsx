@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpRight, BadgeCheck, CalendarDays } from "lucide-react";
-import { usePlayceStore } from "@/lib/store";
+import { usePlaycesStore } from "@/lib/store";
 import { getEventBySlug } from "@/lib/mock/events";
 import { Collectible3DViewer } from "@/components/collectible-3d-viewer";
 import { ShareCard } from "@/components/share-card";
@@ -19,7 +19,7 @@ export default function CollectiblePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const claims = usePlayceStore((s) => s.claims);
+  const claims = usePlaycesStore((s) => s.claims);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 

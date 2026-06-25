@@ -12,8 +12,8 @@ import {
   Loader2,
   Lock,
 } from "lucide-react";
-import type { PlayceEvent } from "@/lib/types";
-import { usePlayceAuth } from "@/lib/auth/context";
+import type { PlaycesEvent } from "@/lib/types";
+import { usePlaycesAuth } from "@/lib/auth/context";
 import { useEnsTicketStore } from "@/lib/ens-ticket-store";
 import { claimEnsTicket } from "@/lib/ens-ticket-service";
 import {
@@ -27,9 +27,9 @@ import { Badge } from "@/components/ui/badge";
 
 type Phase = "idle" | "claiming" | "done" | "error";
 
-export function EnsTicketCard({ event }: { event: PlayceEvent }) {
+export function EnsTicketCard({ event }: { event: PlaycesEvent }) {
   const { authenticated, email, wallet, ready, getAccessToken } =
-    usePlayceAuth();
+    usePlaycesAuth();
   const tickets = useEnsTicketStore((s) => s.tickets);
   const addTicket = useEnsTicketStore((s) => s.addTicket);
 

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { CalendarDays, MapPin, ArrowUpRight } from "lucide-react";
-import type { PlayceEvent } from "@/lib/types";
+import type { PlaycesEvent } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { formatDateRange } from "@/lib/utils";
 
-export function EventCard({ event }: { event: PlayceEvent }) {
+export function EventCard({ event }: { event: PlaycesEvent }) {
   return (
     <Link
       href={`/event/${event.slug}`}

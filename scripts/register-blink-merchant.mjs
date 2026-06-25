@@ -4,7 +4,7 @@
  *
  * Usage:
  *   BLINK_REGISTRATION_EMAIL=you@example.com \
- *   BLINK_REGISTRATION_DOMAIN=playce.app \
+ *   BLINK_REGISTRATION_DOMAIN=playces.fun \
  *   BLINK_PUBLIC_KEY_PATH=secrets/blink-public.pem \
  *   BLINK_SANDBOX=1 node scripts/register-blink-merchant.mjs
  */
@@ -12,11 +12,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 const email = process.env.BLINK_REGISTRATION_EMAIL;
-const domain = process.env.BLINK_REGISTRATION_DOMAIN ?? "playce.app";
+const domain = process.env.BLINK_REGISTRATION_DOMAIN ?? "playces.fun";
 const telegram = process.env.BLINK_REGISTRATION_TELEGRAM;
 const description =
   process.env.BLINK_REGISTRATION_DESCRIPTION ??
-  "Playce is a venue-based social gaming app where attendees check in at real-world events, play head-to-head mini-games like The 67, and collect onchain rewards. Blink funds USDC stakes deposited into our escrow contract before winner-takes-all matches on Ethereum Sepolia.";
+  "Playces is a venue-based social gaming app where attendees check in at real-world events, play head-to-head mini-games like The 67, and collect onchain rewards. Blink funds USDC stakes deposited into our escrow contract before winner-takes-all matches on Ethereum Sepolia.";
 const sandbox = process.env.BLINK_SANDBOX === "1" || process.env.BLINK_SANDBOX === "true";
 const apiBase = sandbox
   ? "https://api-sandbox.blink.cash"

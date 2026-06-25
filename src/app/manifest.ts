@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Playce — Show up. Play. Earn.",
-    short_name: "Playce",
+    name: "Playces — Show up. Play. Earn.",
+    short_name: "Playces",
     description:
       "Turn real-world venues into interactive social arenas. Check in, play mini-games, rep your chain, unlock airdrops, and collect onchain rewards.",
     start_url: "/",

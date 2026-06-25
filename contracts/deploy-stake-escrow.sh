@@ -23,16 +23,16 @@ fi
 
 # shellcheck source=resolve-chain.sh
 source "$SCRIPT_DIR/resolve-chain.sh"
-resolve_playce_chain
+resolve_playces_chain
 
 if [ -n "${MINTER_PRIVATE_KEY:-}" ]; then
   PK="$MINTER_PRIVATE_KEY"
-elif [ -d "$HOME/.playce/keystore" ]; then
-  KEYSTORE_DIR="$HOME/.playce/keystore"
+elif [ -d "$HOME/.playces/keystore" ]; then
+  KEYSTORE_DIR="$HOME/.playces/keystore"
   KSFILE="$(ls -1 "$KEYSTORE_DIR" | head -1)"
   PK="$(cast wallet decrypt-keystore --keystore-dir "$KEYSTORE_DIR" "$KSFILE" --unsafe-password "" | awk '{print $NF}')"
 else
-  echo "Set MINTER_PRIVATE_KEY or create ~/.playce/keystore with a funded deployer." >&2
+  echo "Set MINTER_PRIVATE_KEY or create ~/.playces/keystore with a funded deployer." >&2
   exit 1
 fi
 

@@ -140,6 +140,53 @@ export function buildSignedResponse(
   };
 }
 
+/**
+ * Authenticate a caller by their Privy token, returning their identity. Unlike
+ * `verifyPrivyWalletOwnership` this isn't tied to a specific wallet — it just
+ * confirms the user is signed in (used for create-event style actions).
+ *
+ * When Privy isn't configured (local/dev) this returns `{ ok: true,
+ * configured: false }` so the flow still works without secrets.
+ */
+export async function verifyPrivyAuth(
+  authToken: string | null,
+): Promise<
+  | {
+      ok: true;
+      configured: boolean;
+      userId?: string;
+      email?: string;
+      wallet?: string;
+    }
+  | { ok: false; status: number; error: string }
+> {
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
+  const appSecret = process.env.PRIVY_APP_SECRET ?? "";
+
+  if (!appId || !appSecret) {
+    return { ok: true, configured: false };
+  }
+  if (!authToken) {
+    return { ok: false, status: 401, error: "Sign in to continue." };
+  }
+
+  try {
+    const { PrivyClient } = await import("@privy-io/server-auth");
+    const privy = new PrivyClient(appId, appSecret);
+    const { userId } = await privy.verifyAuthToken(authToken);
+    const user = await privy.getUser(userId);
+
+    const email = user.linkedAccounts.find((a) => a.type === "email")?.address;
+    const wallet = user.linkedAccounts
+      .filter((a) => a.type === "wallet")
+      .map((a) => a.address)[0];
+
+    return { ok: true, configured: true, userId, email, wallet };
+  } catch {
+    return { ok: false, status: 401, error: "Invalid authorization token." };
+  }
+}
+
 export async function verifyPrivyWalletOwnership(
   authToken: string | null,
   requestedAddress: string,
@@ -177,7 +224,7 @@ export async function verifyPrivyWalletOwnership(
         ok: false,
         status: 403,
         error:
-          "This wallet isn't linked to your Playce account. Connect & link it in Privy (or stake from your Playce embedded wallet) before staking.",
+          "This wallet isn't linked to your Playces account. Connect & link it in Privy (or stake from your Playces embedded wallet) before staking.",
       };
     }
 

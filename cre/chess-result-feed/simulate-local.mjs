@@ -1,5 +1,5 @@
 /**
- * Local simulation of the Playce chess result feed (no CRE DON required).
+ * Local simulation of the Playces chess result feed (no CRE DON required).
  *
  * The real workflow (`main.ts`) runs on a Chainlink CRE DON and needs the `cre`
  * CLI + a CRE account. This harness reproduces the SAME data-feed logic on plain
@@ -157,7 +157,7 @@ const SAMPLE_BLACK = "0x000000000000000000000000000000000000dEaD";
 
 async function main() {
   console.log("─".repeat(64));
-  console.log("Playce chess result feed — LOCAL SIMULATION");
+  console.log("Playces chess result feed — LOCAL SIMULATION");
   console.log(`Lichess auth: ${TOKEN ? "token present" : "anonymous"}`);
   console.log(`On-chain settle: ${SETTLE_ONCHAIN ? "ON (Base fork)" : "off (report only)"}`);
 

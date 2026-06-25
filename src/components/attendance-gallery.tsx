@@ -19,7 +19,7 @@ export function AttendanceGallery({ claims }: { claims: Claim[] }) {
           No moments yet
         </h3>
         <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-          Check in at a Playce venue, play a game, and earn your first onchain
+          Check in at a Playces venue, play a game, and earn your first onchain
           reward. Your collected moments will live here.
         </p>
         <Link

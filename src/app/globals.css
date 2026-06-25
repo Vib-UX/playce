@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
-  Playce design system
+  Playces design system
   Bold arcade energy — show up, play, earn.
   Light: clean off-white, ink text, hot-magenta accent.
   Dark: deep near-black, neon glow — magenta / cyan / lime.
@@ -41,7 +41,7 @@
   --input: #e9e7f0;
   --ring: #ff2e88;
 
-  /* Playce brand */
+  /* Playces brand */
   --brand: #ff2e88;
   --brand-deep: #c81264;
   --aurora-1: #ff2e88;

@@ -1,7 +1,7 @@
-import type { PlayceEvent } from "@/lib/types";
+import type { PlaycesEvent } from "@/lib/types";
 import { Avatar } from "@/components/ui/avatar";
 
-export function EventHosts({ event }: { event: PlayceEvent }) {
+export function EventHosts({ event }: { event: PlaycesEvent }) {
   return (
     <div className="space-y-3">
       {event.hosts.map((h) => (
@@ -20,7 +20,7 @@ export function EventHosts({ event }: { event: PlayceEvent }) {
   );
 }
 
-export function EventSpeakers({ event }: { event: PlayceEvent }) {
+export function EventSpeakers({ event }: { event: PlaycesEvent }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {event.speakers.map((s) => (

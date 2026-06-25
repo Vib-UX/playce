@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-// PvP now lives inside events. Send the old global hub into the event-gated
-// 67 lobby, which prompts the player to pick a venue and check in.
+// The old PvP hub now lives at the games hub, where players can jump into
+// online play or pick an event/venue.
 export default function PvpHubPage() {
-  redirect("/play/67");
+  redirect("/play");
 }

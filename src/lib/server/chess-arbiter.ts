@@ -14,7 +14,7 @@ import { ACTIVE_CHAIN, rpcUrlForChain } from "@/lib/chain";
 
 /**
  * Server-only bridge to the on-chain `ChessArbiter` (a Chainlink CRE
- * `IReceiver` consumer). When configured, Playce registers a finished-or-not
+ * `IReceiver` consumer). When configured, Playces registers a finished-or-not
  * match on-chain via `openMatch`; the CRE workflow later fetches the Lichess
  * result and calls `onReport`, which settles the `StakeEscrow` pot to the
  * verified winner — no trusted backend in the settlement path.
@@ -38,7 +38,7 @@ const operatorKey = rawKey.startsWith("0x")
     ? (`0x${rawKey}` as `0x${string}`)
     : null;
 
-/** True when Playce can register matches on-chain for CRE settlement. */
+/** True when Playces can register matches on-chain for CRE settlement. */
 export const CHESS_ARBITER_ENABLED =
   process.env.CHESS_ARBITER_ENABLED === "true" &&
   Boolean(CHESS_ARBITER_ADDRESS && operatorKey);

@@ -1,5 +1,5 @@
 /**
- * Core data model for Playce.
+ * Core data model for Playces.
  * These types are intentionally backend-agnostic: the mock layer in
  * `lib/mock/*` returns these shapes, and a real API / indexer can return the
  * exact same ones later with no UI changes.
@@ -131,7 +131,7 @@ export interface MiniGame {
   status: "live" | "soon";
 }
 
-export interface PlayceEvent {
+export interface PlaycesEvent {
   id: string;
   slug: string;
   title: string;
@@ -140,7 +140,7 @@ export interface PlayceEvent {
   coverImageColor: string;
   /** Optional cover artwork; falls back to a brand gradient when absent. */
   coverImageUrl?: string;
-  /** Short label for the kind of venue (e.g. "Playce Night", "Conference"). */
+  /** Short label for the kind of venue (e.g. "Playces Night", "Conference"). */
   kind: string;
   startISO: string;
   endISO: string;
@@ -171,6 +171,10 @@ export interface PlayceEvent {
     arModelUrls?: string[];
   };
   chainId: number;
+  /** Where this event came from: bundled mock data vs a user-created event. */
+  source?: "mock" | "user";
+  /** Identifier of the creator (Privy user id, wallet, or email handle). */
+  createdBy?: string;
 }
 
 export type EligibilityState = "idle" | "checking" | "pass" | "fail";

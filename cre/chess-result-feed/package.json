@@ -1,8 +1,8 @@
 {
-  "name": "playce-chess-result-feed",
+  "name": "playces-chess-result-feed",
   "version": "0.1.0",
   "private": true,
-  "description": "Chainlink CRE workflow that settles Playce chess PvP from the Lichess result.",
+  "description": "Chainlink CRE workflow that settles Playces chess PvP from the Lichess result.",
   "type": "module",
   "scripts": {
     "simulate:local": "node simulate-local.mjs",

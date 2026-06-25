@@ -13,7 +13,7 @@ import {
 } from "../src/lib/server/leaderboard-store.mjs";
 
 /**
- * Live relay for Playce chess PvP (`/api/chess-ws`).
+ * Live relay for Playces chess PvP (`/api/chess-ws`).
  *
  * This is the real-time companion to the HTTP routes: registration, staking and
  * the Lichess challenge stay on `/api/chess/*` (they need Privy auth + secrets),
